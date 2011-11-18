@@ -40,6 +40,8 @@
 #include <sqlucode.h>
 #endif
 
+static const char *VERSION = "0.99994";
+
 #ifndef HAVE_TYPE_SQLTCHAR
 #ifdef UNICODE
 typedef SQLWCHAR SQLTCHAR;
@@ -163,7 +165,7 @@ typedef struct dbc {
     VALUE self;
     VALUE env;
     struct env *envp;
-    LINK stmts; 
+    LINK stmts;
     SQLHDBC hdbc;
     VALUE rbtime;
     VALUE gmtime;
@@ -350,7 +352,7 @@ static const char *colnamebuf[] = {
 #define LEN_ALIGN(x) \
     ((x) + sizeof (double) - (((x) + sizeof (double)) % sizeof (double)))
 
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -389,7 +391,7 @@ uc_strchr(SQLWCHAR *str, SQLWCHAR c)
 
 static int
 mkutf(char *dest, SQLWCHAR *src, int len)
-{      
+{
     int i;
     char *cp = dest;
 
@@ -624,7 +626,7 @@ uc_free(SQLWCHAR *str)
 
 #endif
 
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -651,7 +653,7 @@ dsn_init(VALUE self)
     rb_iv_set(self, "@descr", Qnil);
     return self;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -678,7 +680,7 @@ drv_init(VALUE self)
     rb_iv_set(self, "@attrs", rb_hash_new());
     return self;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -744,7 +746,7 @@ list_first(LINK *head)
 static int
 list_empty(LINK *head)
 {
-    return head->succ == NULL; 
+    return head->succ == NULL;
 }
 
 static void
@@ -927,7 +929,7 @@ mark_stmt(STMT *q)
 	rb_gc_mark(q->dbc);
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -950,7 +952,7 @@ set_err(const char *msg, int warn)
     CVAR_SET(Cobj, warn ? IDatatinfo : IDataterror, a);
     return STR2CSTR(v);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1281,7 +1283,7 @@ succeeded_nodata(SQLHENV henv, SQLHDBC hdbc, SQLHSTMT hstmt, SQLRETURN ret,
     }
     return succeeded_common(henv, hdbc, hstmt, ret, msgp);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1322,7 +1324,7 @@ get_env(VALUE self)
     Data_Get_Struct(env_of(self), ENV, e);
     return e;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1348,7 +1350,7 @@ get_dbc(VALUE self)
     Data_Get_Struct(self, DBC, p);
     return p;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1379,7 +1381,7 @@ dbc_raise(VALUE self, VALUE msg)
     rb_raise(Cerror, "%s", buf);
     return Qnil;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1417,7 +1419,7 @@ env_new(VALUE self)
 #endif
     return obj;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1472,7 +1474,7 @@ dbc_dsns(VALUE self)
     }
     return aret;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1548,7 +1550,7 @@ dbc_drivers(VALUE self)
     }
     return aret;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1867,7 +1869,7 @@ dbc_rfdsn(int argc, VALUE *argv, VALUE self)
     return Qnil;
 #endif
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1895,7 +1897,7 @@ dbc_clrerror(VALUE self)
     CVAR_SET(Cobj, IDatatinfo, Qnil);
     return Qnil;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1966,7 +1968,7 @@ dbc_new(int argc, VALUE *argv, VALUE self)
     }
     return obj;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -2194,7 +2196,7 @@ dbc_timeutc(int argc, VALUE *argv, VALUE self)
     }
     return p->gmtime;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -2218,7 +2220,7 @@ dbc_dropall(VALUE self)
     }
     return self;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -2255,7 +2257,7 @@ dbc_disconnect(int argc, VALUE *argv, VALUE self)
     }
     return Qfalse;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -3169,7 +3171,7 @@ dbc_getinfo(int argc, VALUE *argv, VALUE self)
     }
     return Qnil;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -3320,7 +3322,7 @@ make_coltypes(SQLHSTMT hstmt, int ncols, char **msgp)
     }
     return ret;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -3400,7 +3402,7 @@ retain_paraminfo_override(STMT *q, int nump, PARAMINFO *paraminfo)
 	}
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -3445,7 +3447,7 @@ wrap_stmt(VALUE dbc, DBC *p, SQLHSTMT hstmt, STMT **qp)
     }
     return stmt;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -3555,7 +3557,7 @@ upcase_if(char *string, int upc)
     }
     return string;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -3725,7 +3727,7 @@ make_column(SQLHSTMT hstmt, int i, int upc)
     rb_iv_set(obj, "@autoincrement", v);
     return obj;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -3765,7 +3767,7 @@ make_param(STMT *q, int i)
     rb_iv_set(obj, "@output_type", INT2NUM(v));
     return obj;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -4049,7 +4051,7 @@ dbc_speccols(int argc, VALUE *argv, VALUE self)
 {
     return dbc_info(argc, argv, self, INFO_SPECCOLS);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -4144,7 +4146,7 @@ dbc_transaction(VALUE self)
 			     rb_funcall(ret, IDto_s, 0, 0)));
     return Qnil;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -4225,7 +4227,7 @@ env_odbcver(int argc, VALUE *argv, VALUE self)
     rb_raise(Cerror, "%s", set_err("Unsupported in ODBC < 3.0", 0));
 #endif
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -4367,8 +4369,8 @@ do_option(int argc, VALUE *argv, VALUE self, int isstmt, int op)
 	if (val == Qnil) {
 	    return v ? Qtrue : Qfalse;
 	}
-	v = (TYPE(val) == T_FIXNUM) ?  
-	    (FIX2INT(val) ? SQL_AUTOCOMMIT_ON : SQL_AUTOCOMMIT_OFF) : 
+	v = (TYPE(val) == T_FIXNUM) ?
+	    (FIX2INT(val) ? SQL_AUTOCOMMIT_ON : SQL_AUTOCOMMIT_OFF) :
 	    (RTEST(val) ? SQL_AUTOCOMMIT_ON : SQL_AUTOCOMMIT_OFF);
 	break;
 
@@ -4376,8 +4378,8 @@ do_option(int argc, VALUE *argv, VALUE self, int isstmt, int op)
 	if (val == Qnil) {
 	    return v ? Qtrue : Qfalse;
 	}
-	v = (TYPE(val) == T_FIXNUM) ?  
-	    (FIX2INT(val) ? SQL_NOSCAN_ON : SQL_NOSCAN_OFF) : 
+	v = (TYPE(val) == T_FIXNUM) ?
+	    (FIX2INT(val) ? SQL_NOSCAN_ON : SQL_NOSCAN_OFF) :
 	    (RTEST(val) ? SQL_NOSCAN_ON : SQL_NOSCAN_OFF);
 	break;
 
@@ -4406,7 +4408,7 @@ do_option(int argc, VALUE *argv, VALUE self, int isstmt, int op)
 	    rb_raise(Cerror, "%s", msg);
 	}
     } else {
-	if (!succeeded(SQL_NULL_HENV, SQL_NULL_HDBC, q->hstmt, 
+	if (!succeeded(SQL_NULL_HENV, SQL_NULL_HDBC, q->hstmt,
 		       SQLSetStmtOption(q->hstmt, (SQLUSMALLINT) op,
 					(SQLUINTEGER) v),
 		       &msg, "SQLSetStmtOption(%d)", op)) {
@@ -4517,7 +4519,7 @@ stmt_getsetoption(int argc, VALUE *argv, VALUE self)
 {
     return do_option(argc, argv, self, 1, -1);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -4555,7 +4557,7 @@ scan_dtts(VALUE str, int do_d, int do_t, TIMESTAMP_STRUCT *ts)
 	ts->day = dd;
 	return 1;
     }
-    if (do_t && 
+    if (do_t &&
 	(sscanf(cstr, "{t '%d:%d:%d' %c", &hh, &mmm, &ss, &c) == 4) &&
 	(c == '}')) {
 	ts->hour = yy;
@@ -4595,7 +4597,7 @@ next:
     }
     return 0;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -4620,7 +4622,7 @@ date_new(int argc, VALUE *argv, VALUE self)
 {
     DATE_STRUCT *date;
     VALUE obj = Data_Make_Struct(self, DATE_STRUCT, 0, xfree, date);
-    
+
     rb_obj_call_init(obj, argc, argv);
     return obj;
 }
@@ -4830,7 +4832,7 @@ date_cmp(VALUE self, VALUE date)
     }
     return INT2FIX(1);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -4855,7 +4857,7 @@ time_new(int argc, VALUE *argv, VALUE self)
 {
     TIME_STRUCT *time;
     VALUE obj = Data_Make_Struct(self, TIME_STRUCT, 0, xfree, time);
-    
+
     rb_obj_call_init(obj, argc, argv);
     return obj;
 }
@@ -4869,7 +4871,7 @@ time_load1(VALUE self, VALUE str, int load)
     if (scan_dtts(str, 0, 1, &tss)) {
 	TIME_STRUCT *time;
 	VALUE obj;
-       
+
 	if (load) {
 	    obj = Data_Make_Struct(self, TIME_STRUCT, 0, xfree, time);
 	} else {
@@ -5058,7 +5060,7 @@ time_cmp(VALUE self, VALUE time)
     }
     return INT2FIX(1);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -5401,7 +5403,7 @@ timestamp_cmp(VALUE self, VALUE timestamp)
     }
     return INT2FIX(1);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -5463,7 +5465,7 @@ check_ncols(STMT *q)
 	(q->coltypes == NULL)) {
 	COLTYPE *coltypes = NULL;
 	SQLSMALLINT cols = 0;
-	
+
 	if (succeeded(SQL_NULL_HENV, SQL_NULL_HDBC, q->hstmt,
 		      SQLNumResultCols(q->hstmt, &cols), NULL,
 		      "SQLNumResultCols")
@@ -7479,7 +7481,7 @@ static VALUE
 stmt_do(int argc, VALUE *argv, VALUE self)
 {
     VALUE stmt;
-    
+
     if (argc < 1) {
 	rb_raise(rb_eArgError, "wrong # of arguments");
     }
@@ -7520,7 +7522,7 @@ stmt_ignorecase(int argc, VALUE *argv, VALUE self)
     }
     return *flag ? Qtrue : Qfalse;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -7543,7 +7545,7 @@ stmt_new(VALUE self)
     }
     return wrap_stmt(self, p, hstmt, NULL);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -7634,7 +7636,7 @@ stmt_procwrap(int argc, VALUE *argv, VALUE self)
     }
     return rb_funcall(Cproc, IDnew, 2, arg0, arg1);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -7817,7 +7819,7 @@ mod_trace(int argc, VALUE *argv, VALUE self)
     return INT2NUM(0);
 #endif
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -8070,7 +8072,7 @@ static struct {
     { &IDlocal, "local" },
     { &IDto_s, "to_s" }
 };
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -8081,9 +8083,9 @@ static struct {
 
 void
 #ifdef UNICODE
-Init_odbc_utf8()
+Init_odbc_utf8_ext()
 #else
-Init_odbc()
+Init_odbc_ext()
 #endif
 {
     int i;
@@ -8095,7 +8097,7 @@ Init_odbc()
     rb_cDate = rb_eval_string("Date");
 
     if (rb_const_defined(rb_cObject, modid)) {
-	v = rb_const_get(rb_cObject, modid); 
+	v = rb_const_get(rb_cObject, modid);
 	if (TYPE(v) != T_MODULE) {
 	    rb_raise(rb_eTypeError, "%s already defined", modname);
 	}
@@ -8113,6 +8115,10 @@ Init_odbc()
     }
 
     Modbc = rb_define_module(modname);
+
+    /* Library version */
+    rb_define_const(Modbc, "VERSION", rb_str_new2(VERSION) );
+
     Cobj = rb_define_class_under(Modbc, "Object", rb_cObject);
     rb_define_class_variable(Cobj, "@@error", Qnil);
     rb_define_class_variable(Cobj, "@@info", Qnil);

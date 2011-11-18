@@ -1,6 +1,8 @@
 require 'mkmf'
 
-if ! defined? PLATFORM
+if enable_config('win32-cross-compilation')
+  PLATFORM = 'mingw32'
+elsif ! defined? PLATFORM
   PLATFORM = RUBY_PLATFORM
 end
 
@@ -38,7 +40,7 @@ def have_func_nolink(func, headers = nil, &b)
     end
   end
 end
- 
+
 dir_config("odbc")
 have_header("sql.h") || begin
   puts "ERROR: sql.h not found"
@@ -153,4 +155,4 @@ else
     have_func("SQLInstallerErrorW", "odbcinst.h")
 end
 
-create_makefile("odbc_utf8")
+create_makefile("odbc_utf8_ext")

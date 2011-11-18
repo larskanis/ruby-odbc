@@ -1,6 +1,8 @@
-# $Id: README,v 1.41 2011/01/15 08:03:22 chw Exp chw $
+= ODBC binding for Ruby
 
-ruby-odbc-0.99994
+* Homepage: http://www.ch-werner.de/rubyodbc/
+
+== DESCRIPTION:
 
 This is an ODBC binding for Ruby. So far it has been tested with
 
@@ -22,12 +24,12 @@ This is an ODBC binding for Ruby. So far it has been tested with
     Will Merrell <wmerrell@catalystcorp.com> reported successful compilation
     with Cygwin on Win32.
 
-Requirements:
+== Requirements:
 
     - Ruby 1.6.[3-8] or Ruby >= 1.7
-    - unixODBC 2.x or libiodbc 3.52 on UN*X 
+    - unixODBC 2.x or libiodbc 3.52 on UN*X
 
-Installation:
+== Installation:
 
     $ ruby -Cext extconf.rb [--enable-dlopen|--disable-dlopen]
     $ make -C ext
@@ -40,13 +42,13 @@ Installation:
     locations, use the option --with-odbc-dir=<non-standard-location>
     when running extconf.rb
 
-Installation of utf8 version:
+=== Installation of utf8 version:
 
     $ ruby -Cext/utf8 extconf.rb [--enable-dlopen|--disable-dlopen]
     $ make -C ext/utf8
     # make -C ext/utf8 install
 
-Installation MSVC:
+=== Installation MSVC:
 
     C:..>ruby -Cext extconf.rb
     C:..>cd ext
@@ -57,13 +59,13 @@ Installation MSVC:
     C:..>nmake
     C:..>nmake install
 
-Testing:
+== Testing:
 
     $ ruby -Ctest test.rb DSN [uid] [pwd]
  or
     $ ruby -KU -Ctest/utf8 test.rb DSN [uid] [pwd]
 
-Usage:
+== Usage:
 
     Refer to doc/odbc.html
 
@@ -98,12 +100,12 @@ Usage:
     allow to use both versions simultaneously in special
     situations.
 
-TODO:
+== TODO:
 
     - heavier testing
     - improve documentation
 
-Author:
+== Author:
 
     Christian Werner
     mailto:chw@ch-werner.de

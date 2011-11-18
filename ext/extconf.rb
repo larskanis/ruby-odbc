@@ -1,6 +1,8 @@
 require 'mkmf'
 
-if ! defined? PLATFORM
+if enable_config('win32-cross-compilation')
+  PLATFORM = 'mingw32'
+elsif ! defined? PLATFORM
   PLATFORM = RUBY_PLATFORM
 end
 
@@ -17,7 +19,7 @@ def have_library_ex(lib, func="main", headers=nil)
     end
   end
 end
- 
+
 dir_config("odbc")
 have_header("version.h")
 have_header("sql.h") || begin
@@ -119,4 +121,4 @@ else
   end
 end
 
-create_makefile("odbc")
+create_makefile("odbc_ext")
