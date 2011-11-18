@@ -4,7 +4,7 @@ ChangeLog
 GPL
 MANIFEST
 Manifest.txt
-README
+README.rdoc
 Rakefile
 doc/odbc.html
 ext/extconf.rb
