@@ -7,7 +7,7 @@ require 'rake/extensiontask'
 hoe = Hoe.spec 'ruby-odbc' do |ext|
   developer('Christian Werner', 'chw @nospam@ ch-werner.de')
 
-  self.readme_file = 'README'
+  self.readme_file = 'README.rdoc'
   self.history_file = 'ChangeLog'
   self.extra_rdoc_files << self.readme_file
   self.extra_rdoc_files += %w[ ext/init.c ext/odbc.c ]
