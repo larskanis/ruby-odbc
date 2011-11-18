@@ -1,0 +1,317 @@
+ODBC binding for Ruby
+---------------------
+
+Sat Jan 15 2011 version 0.99994 released
+
+	* fixed column key caching, thanks Sean Noonan for bug report
+
+Fri Dec 24 2010 version 0.99993 released
+
+	* fixed error reporting in Database.transaction method,
+	  thanks Shane Emmons for bug report and testing
+
+Thu Sep 16 2010 version 0.99992 released
+
+	* ODBC::Statement.each/each_hash now output arrays when
+	  invoked without block
+	* column keys in result hashes now are cached/recycled Ruby strings
+	* added ODBC::Database methods use_time/use_utc to directly
+	  output Ruby Time/Date objects
+	* added encoding support in the UTF8 variant for Ruby >= 1.9
+	* added module constant ODBC::UTF8 to indicate variant of module
+	* fixes for M$SQL server reporting zero column sizes
+	  and unknown data types for varchar(strmax) columns
+	* eliminated compiler warnings
+	* use StringValueCStr instead of STR2CSTR (Ruby >= 1.9.1)
+	* small change for decision when to use SQLGetData() loop
+
+Sun Apr 25 2010 version 0.99991 released
+
+	* detect HAVE_LONG_LONG for builds with unixODBC
+	* UTF-8 coding/decoding fix for range 0x80..0xBF
+
+Thu Feb 18 2010 version 0.9999 released
+
+	* integrated Bosko Ivanisevic's fixes in ext/utf8/extconf.rb
+	  and test/test.rb and test/utf8/test.rb
+
+Fri Jan 15 2010 version 0.9998 released
+
+	* documentation update
+	* reorganized directory layout for making a gem
+
+Wed May 20 2009 version 0.9997 released
+
+	* added Chad Johnson's FreeTDS/MSSQL patch to prevent from
+	  re-prepare of queries with SQL_VARCHAR parameters
+
+Mon Feb 02 2009 version 0.9996 released
+
+	* updates for Ruby > 1.8
+	* added Stephen Veit's SQL_NO_TOTAL handling to improve
+	  retrieving large SQL_C_BINARY data
+	* fixes for SQLExecute/SQLExecDirect returning SQL_NO_DATA
+
+Sat Apr 07 2007 version 0.9995 released
+
+	* init.c: prefer libiodbc.so.2 over libiodbc.so and
+	  libodbc.so.1 over libodbc.so and same logic for
+	  the installer shared library
+	* no exception thrown on stale HSTMT for ODBC::Statement.nrows
+
+Mon Dec 25 2006 version 0.9994 released
+
+	* improved doc on ODBC::Statement.*param*, ODBC::Parameter,
+	  and related ODBCProc
+	* added support for output/input-output parameters in queries,
+	  methods ODBC::Statement.param_iotype/param_output_type/
+	  param_output_size/param_output_value
+
+Fri Sep 15 2006 version 0.9993 released
+
+	* more tweaks in extconf.rb for --enable-dlopen'ed utf8 version
+	  thanks Daigo Moriwaki for testing
+	* eliminated warnings for installer functions 
+
+Mon Sep 11 2006 version 0.9992 released
+
+	* added parameter "column" in ODBC::Database::columns
+	* intern most strings on module load
+	* enhanced ODBC::Statement.fetch_hash et.al. to produce
+	  intern'ed strings or fixnums as hash keys as requested
+	  by Neville Burnell
+	* handle SQL_NO_DATA for chunk-wise SQLGetData()
+	* determine dynamically which API (UNICODE or ANSI) to
+	  use for ODBC installer functions	
+	* more 64 bit fixes
+	* added missing SQLEndTran() in init.c
+
+Sat Aug 05 2006 version 0.9991 released
+
+	* fixed more SQLLEN vs SQLINTEGER issues and 64 bit warnings
+	* bail out during extconf.rb when sql.h/sqlext.h is not
+	  available as requested by Curt Sampson
+	* fixed transaction logic ENV vs. DBC and use SQLEndTran()
+	  for ODBCVER >= 0x0300, thanks Adam Harper for patch
+	* detect SQL parameter strings containing '\0's and use
+	  SQL_C_BINARY when appropriate as parameter types to support
+	  BLOB data, thanks Daigo Moriwaki for report and testing
+	* don't use dlopen()/GCC weak attributes on MacOSX
+
+Wed Jun 28 2006 version 0.999 released
+
+	* added ODBC::Column@autoincrement information
+	* added init.c and extconf.rb logic for resolving iODBC/unixODBC
+	  library dependencies at runtime using GCC weak attribute in
+	  conjunction with dlopen(), this feature can be enabled/disabled
+	  with "ruby extconf.rb --enable-dlopen"
+
+Sun May 21 2006 version 0.998 released
+
+	* added undocumented module methods ODBC::write_file_dsn and
+	  ODBC::read_file_dsn
+	* fixes in SQLConfigDataSource/SQLInstallerError detect/usage
+	* added statement level option handling (SQLSetStmtOption),
+	  ODBC::Database.newstmt, ODBC::Statement.prepare|run as
+	  contributed by Carl Blakeley of OpenLink Software
+	* eliminated most GCC 4.x warnings
+
+Sun Dec 25 2005 version 0.997 released
+
+	* 32/64 bit issues as pointed out by Lars Kanis
+	* ODBC::Database.get_info implementation and constants, idea
+	  and initial coding contributed by Tim Haynes of OpenLink Software
+	* ODBC::Statement.param_type implemented as work around for
+	  Ingres ODBC driver. Thanks Jon Chambers for idea and testing
+
+Sun Nov 21 2004 version 0.996 released
+
+	* use SQLInstallerError() for adddsn/confdsn/deldsn if available,
+	  code contributed by Ryszard Niewisiewicz
+	* retry SQLBindParameter() for SQL_VARCHAR when SQLDescribeParam()
+	  doesn't work (e.g. on MS Jet Engine)
+	* fixed crashes when SQLBindParameter failed in stmt_exec_int(),
+	  as reported by Ryszard Niewisiewicz
+
+Tue Sep 07 2004 version 0.995 released
+
+	* fixed another buffer alignment bug fetching doubles on sparc,
+	  thanks Dan Debertin for testing.
+
+Wed Jul 14 2004 version 0.994 released
+
+	* fixed ODBC::Database.new|connect so that 
+	  ODBC::Database.new.drvconnect(string) works
+	* fixed SQLTCHAR detect for Win32 in extconf.rb,
+	  thanks to Pedro Luis Castedo Cepeda
+
+Mon Jun 28 2004 version 0.993 released
+
+	* use HAVE_TYPE_SQLTCHAR from extconf.rb for old iODBC versions
+	* don't rb_define_alloc_func of dsn_new/drv_new for Ruby >= 1.8,
+	  gives stack overflows, thanks to Pedro Luis Castedo Cepeda
+	  for fixing
+	* fixes for iODBC driver manager concerning SQLFetchScroll
+	  availability (SQL state codes IM001 vs HYC000)
+	* blob handling fix as suggested by Kaspar Schiess
+
+Mon Mar 22 2004 version 0.992 released
+
+	* fixed buggy UTF8->Unicode conversion code
+	* fixed handling of uppercase column names in row hashes
+
+Fri Dec 26 2003 version 0.991 released
+
+	* use SQLConfigDataSourceW() in utf8 version
+	* SQLError() is now always called after error/warning from
+	  other ODBC API invokations in order to cleanup error
+	  messages in driver manager/driver
+	* tweaks for SQLColAttributes() problems as suggested
+	  by Nathaniel Talbott <nathaniel@talbott.ws>
+	* modified extconf.rb as suggestedb by <RNicz@fibernet.pl>
+	* eliminated use of alloca() in utf8 converters
+	* reworked to use Ruby 1.8 rb_define_alloc_func() API
+
+Wed May 21 2003 version 0.99 released
+
+	* no functional changes with respect to 0.98
+	  but starting with 0.99 released under Ruby style license.
+
+Thu May 08 2003 version 0.98 released
+
+	* added utf8 version (-DUNICODE, -D_UNICODE for CFLAGS),
+	  which generates odbc_utf.so, for build instructions
+	  see README. Thanks Bosko Ivanisevic <ivanisev@sezampro.yu>
+	  for ideas and testing.
+
+Fri Apr 25 2003 version 0.97 released
+
+	* align buffers for fetching scalar data (long, double et.al.)
+	  to prevent alignment problems causing bus errors e.g. on sparc,
+	  thanks sakazuki <QZS01353@nifty.ne.jp> for testing.
+
+Wed Mar 19 2003 version 0.96 released
+
+	* added fall back to SQLFetch() when SQLFetchScroll(SQL_FETCH_NEXT)
+	  or SQLExtendedFetch(SQL_FETCH_NEXT) report IM001 error,
+	  thanks Kiyonori Takeda <takeda@newsline.net> for testing.
+
+Mon May 13 2002 version 0.95 released
+
+	* doc updated
+	* minor code cleanups
+	* fixed ODBC::Database.run to properly accept blocks
+	  as reported by Michael Neumann <neumann@s-direktnet.de>
+	* added ODBC::Statement.more_results method as
+	  requested by Chris Morris <chris.morris@snelling.com>
+
+Thu Oct 11 2001 version 0.94 released
+
+	* doc updated
+	* fixed off-by-one bug in do_fetch function
+	* added some more SQL_* constants
+	* added ODBC::Database.special_columns method
+	* added unique flag to ODBC::Database.indexes
+
+Fri Sep 07 2001 version 0.93 released
+
+	* doc updated
+	* removed default column name conversion to upper case
+	  as introduced in version 0.91
+	* added ignorecase, ignorecase= methods for ODBC::Database
+	  and ODBC::Statement as suggested by
+	  Sean O'Halpin <sean.ohalpin@bamberforsyth.com>
+
+Fri Aug 31 2001 version 0.92 released
+
+	* ODBC::Parameter class and ODBC::Statement.make_proc method added
+	* changes to support libiodbc-2.50 eg on Debian, thanks
+	  Massimiliano Mirra <info@chromatic-harp.com> for testing
+	* fixed typos in constant table (SQL_CP_* symbols, O_CONSTU macro)
+	* if odbcinst.h not available, make dummy DSN config methods
+
+Sat Aug 25 2001 version 0.91 released
+
+	* handle non-unique keys in column name/result set hashes
+	  by appending "#column-number" string
+	* convert column names to uppercase if ODBC driver is
+	  identifier case insensitive as suggested by
+	  Elmar Sonnenschein <eso@esomail.de>
+	* added cursorname method in Statement
+	* added assignment methods for Environment/Database/Statement
+	  options
+	* taint strings
+	* use SQLExecDirect() in Statement.run/do when no parameters in query
+
+Wed Aug 15 2001 version 0.9 released
+
+	* doc updated
+	* added alloc/free and ODBC API call tracing
+	  (compile-time, -DTRACING)
+	* added array result for ODBC::Statement.columns
+	* statements are now by default dropped before SQLDisconnect
+	* rewrote resource tracking of environment, database connection
+	  and statement objects due to crashes/hangs on Win32
+	* improved constructors for data/time/timestamp objects
+	* added clone methods for date/time/timestamp objects
+
+Thu Jul 26 2001 version 0.8 released
+
+	* minor doc update
+	* added handling of block for ODBC::Statement.columns method
+	* revised error reporting and SQLRETURN handling with
+	  respect to SQL_SUCCESS_WITH_INFO, introduced info method
+	  to get warnings of last ODBC API call. Change was required
+	  to support MS SQL Server, thanks to correspondence with
+	  David Moore <david.moore@uk.dealogic.com>.
+
+Wed Jun 20 2001 version 0.7 released
+
+	* minor doc update
+	* some more test cases in fetching data
+	* added some more fetch methods (fetch_many, fetch_all ...)
+	* added more tests for conditional include of <windows.h>
+	* again, fixes in parameter binding thanks to patches from
+	  Steve Tuckner <sat@multitech.com>
+
+Tue Jun 12 2001 version 0.6 released
+
+	* reviewed parameter and column information handling
+	* work around cases when SQLDescribeParam is not supported
+	  by the selected ODBC driver
+	* bug fixes in parameter binding
+
+Sun Jun 10 2001 version 0.5 released
+
+	* doc updated
+	* added environment attribute setting/getting methods
+	* eliminated alloca() in fetching data
+	* added missing SQL_CHAR constant
+	* fixed accessor methods for ODBC::(DSN|Driver|Column) as
+	  suggested by Michael Neumann <neumann@s-direktnet.de>
+
+Fri Jun 08 2001 version 0.4 released
+
+	* Cygwin fixes thanks to Michael Neumann <neumann@s-direktnet.de>
+	* minor optimizations
+	* cleanup GC related functions
+
+Sun May 27 2001 version 0.3 released
+
+	* doc updated
+	* win32 port (mswin32 working, mingw untested)
+	* added types (ODBC::Date, ODBC::Time, ODBC::TimeStamp)
+	* reworked module/class organization
+	* major review
+
+Thu May 17 2001 version 0.2 released
+
+	* updated and improved doc
+	* added fetch_hash, each_hash, column ODBCStmt methods
+	* added more constants in ODBC class
+	* added ODBCColumn class
+	* added accessor for ODBC::error
+
+Sun May 13 2001 version 0.1 released
+
+	* initial release.

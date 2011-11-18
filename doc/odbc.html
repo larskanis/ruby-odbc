@@ -1,0 +1,1340 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+    "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+  <head> 
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <meta http-equiv="Content-Style-Type" content="text/css">
+    <meta name="Keywords" lang="en" content="ODBC Binding for Ruby">
+    <link rev="made" href="mailto:chw@ch-werner.de">
+    <style type="text/css">
+      <!--
+      body {
+      background-color: white;
+      color: black;
+      }
+      address { text-align: right }
+      div.lastmodifed { text-align: right }
+      div.language { text-align: right }    
+      pre {
+      white-space: pre;
+      background-color: antiquewhite;
+      border: inset thin;
+      }
+      -->
+    </style>
+    <title>Ruby ODBC Reference</title>
+  </head>
+  <body>
+    <h1><a name="reference">Ruby ODBC Reference</a></h1>
+    <div class = "lastmodifed">
+      Last update: Thu, 16 September 2010
+    </div>
+    <hr>
+    <div>
+      <h2><a name="ODBC">ODBC</a></h2>
+      <p>
+	The module to encapsulate the Ruby ODBC binding.
+      </p>
+      <h3>module functions:</h3>
+      <dl>
+      <dt><a name="ODBC::datasources"><code>datasources</code></a>
+        <dd>Returns an array of <a href="#ODBC::DSN">ODBC::DSN</a>s, i.e. all
+          known data source names.
+	<dt><a name="ODBC::drivers"><code>drivers</code></a>
+        <dd>Returns an array of <a href="#ODBC::Driver">ODBC::Driver</a>s,
+          i.e. all known ODBC drivers.
+	<dt><a name="ODBC::error"><code>error</code></a>
+        <dd>Returns the last error messages (String array) or nil.
+	  The layout of the warning/error messages
+	  is described <a href="#ODBC::Error">here</a>.
+	  Retrieving this message as well as subsequent succeeding ODBC
+	  method invocations do not clear the message. Use the
+	  <a href="#OBDC::clear_error"><code>clear_error</code></a> method
+	  for that purpose.
+	<dt><a name="ODBC::info"><code>info</code></a>
+	<dd>Returns the last driver/driver manager warning messages
+	  (String array) or nil.
+	  The layout of the warning/error messages
+	  is described <a href="#ODBC::Error">here</a>.
+	  Retrieving this message as well as subsequent succeeding ODBC
+	  method invocations do not clear the message. Use the
+	  <a href="#OBDC::clear_error"><code>clear_error</code></a> method
+	  for that purpose.
+	<dt><a name="ODBC::clear_error"><code>clear_error</code></a>
+	<dd>Resets the last driver/driver manager error and warning messages
+	  to nil.
+	<dt><a name="ODBC::raise"><code>raise(<var>value</var>)</code></a>
+        <dd>Raises an <a href="#ODBC::Error">ODBC::Error</a> exception with
+	  String error message <var>value</var>.
+	<dt><a name="ODBC::newenv"><code>newenv</code></a>
+        <dd>Returns a new <a href="#ODBC::Environment">ODBC::Environment</a>.
+	<dt><a name="ODBC::connection_pooling">
+	    <code>connection_pooling[=<var>value</var>]</code></a>
+        <dd>Gets or sets the process-wide connection pooling attribute.
+	<dt><a name="ODBC::to_time1">
+	    <code>to_time(<var>timestamp</var>)</code></a>
+	<dt><a name="ODBC::to_time2"><code>to_time(<var>date</var>,[<var>time</var>])</code></a>
+	<dt><a name="ODBC::to_time3"><code>to_time(<var>time</var>,[<var>date</var>])</code></a>
+        <dd>Creates a <code>Time</code> object from the specified arguments,
+          which must be <a href="#ODBC::Date">ODBC::Date</a>,
+          <a href="#ODBC::Time">ODBC::Time</a>, or
+          <a href="#ODBC::TimeStamp">ODBC::TimeStamp</a> objects.
+	<dt><a name="ODBC::to_date1">
+	    <code>to_date(<var>timestamp</var>)</code></a>
+	<dt><a name="ODBC::to_date2"><code>to_date(<var>date</var>)</code></a>
+        <dd>Creates a <code>Date</code> object from the specified arguments,
+          which must be <a href="#ODBC::Date">ODBC::Date</a>, or
+          <a href="#ODBC::TimeStamp">ODBC::TimeStamp</a> objects.
+	<dt><a name="ODBC::connect"><code>connect(<var>dsn</var>,[<var>user</var>,<var>passwd</var>])
+	      [{|<var>dbc</var>| <var>block</var>}]</code></a>
+	<dd>If no block is specified, a connection to the given data source
+	  is established and a <a href="#ODBC::Database">ODBC::Database</a>
+	  object is returned, identifying that connection. Otherwise, 
+	  the block is executed with the database object. When the block
+	  is finished, the connection is automatically released.
+	  Options are:
+	  <dl>
+	    <dd><var>dsn</var>: Data source name (String or
+	      <a href="#ODBC::DSN">ODBC::DSN</a>)
+	    <dd><var>user</var>: Login user name (String)
+	    <dd><var>passwd</var>: Login password (String)
+	  </dl>
+      </dl>
+      <h3>constants:</h3>
+      <p>
+        The boolean constant <var>UTF8</var> reports the character encoding
+        of the module. If it is <code>true</code>, the UTF-8 variant of
+        the module is in use, and string data is automatically converted
+        to/from Unicode.
+      </p>
+      <p>
+	Some constants of the ODBC API are defined in order to set connection
+	options, to deal with SQL data types, and to obtain database meta data.
+      </p>
+      <dl>
+	<dt>Cursor behaviour:
+	<dd><var>SQL_CURSOR_FORWARD_ONLY</var>,
+	  <var>SQL_CURSOR_KEYSET_DRIVEN</var>,
+	  <var>SQL_CURSOR_DYNAMIC</var>,
+	  <var>SQL_CURSOR_STATIC</var>
+	<dt>Concurrency (transactions):
+	<dd><var>SQL_CONCUR_READ_ONLY</var>,
+	  <var>SQL_CONCUR_LOCK</var>,
+	  <var>SQL_CONCUR_ROWVER</var>,
+	  <var>SQL_CONCUR_VALUES</var>
+	<dt>Fetch direction:
+	<dd><var>SQL_FETCH_NEXT</var>,
+	  <var>SQL_FETCH_FIRST</var>,
+	  <var>SQL_FETCH_LAST</var>,
+	  <var>SQL_FETCH_PRIOR</var>,
+	  <var>SQL_FETCH_ABSOLUTE</var>,
+	  <var>SQL_FETCH_RELATIVE</var>
+	<dt>Data types:
+	<dd><var>SQL_UNKNOWN_TYPE</var>,
+	  <var>SQL_CHAR</var>,
+	  <var>SQL_NUMERIC</var>,
+	  <var>SQL_DECIMAL</var>,
+	  <var>SQL_INTEGER</var>,
+	  <var>SQL_SMALLINT</var>,
+	  <var>SQL_FLOAT</var>,
+	  <var>SQL_REAL</var>,
+	  <var>SQL_DOUBLE</var>,
+	  <var>SQL_VARCHAR</var>,
+	  <var>SQL_DATETIME</var>,
+	  <var>SQL_DATE</var>,
+	  <var>SQL_TYPE_DATE</var>,
+	  <var>SQL_TIME</var>,
+	  <var>SQL_TYPE_TIME</var>,
+	  <var>SQL_TIMESTAMP</var>,
+	  <var>SQL_TYPE_TIMESTAMP</var>,
+	  <var>SQL_LONGVARCHAR</var>,
+	  <var>SQL_BINARY</var>,
+	  <var>SQL_VARBINARY</var>,
+	  <var>SQL_LONGVARBINARY</var>,
+	  <var>SQL_BIGINT</var>,
+	  <var>SQL_TINYINT</var>,
+	  <var>SQL_BIT</var>,
+	  <var>SQL_GUID</var>
+	<dt>Parameter related:
+	<dd><var>SQL_PARAM_TYPE_UNKNOWN</var>,
+	  <var>SQL_PARAM_INPUT</var>,
+	  <var>SQL_PARAM_OUTPUT</var>,
+	  <var>SQL_PARAM_INPUT_OUTPUT</var>,
+	  <var>SQL_DEFAULT_PARAM</var>
+	  <var>SQL_RETURN_VALUE</var>
+	<dt>Procedure related:
+	<dd><var>SQL_RESULT_COL</var>,
+	  <var>SQL_PT_UNKNOWN</var>,
+	  <var>SQL_PT_PROCEDURE</var>,
+	  <var>SQL_PT_FUNCTION</var>
+	<dt>Environment attributes:
+	<dd><var>SQL_CP_OFF</var>,
+	  <var>SQL_CP_ONE_PER_DRIVER</var>,
+	  <var>SQL_CP_ONE_PER_HENV</var>,
+	  <var>SQL_CP_DEFAULT</var>,
+	  <var>SQL_CP_STRICT_MATCH</var>,
+	  <var>SQL_CP_RELAXED_MATCH</var>,
+	  <var>SQL_CP_MATCH_DEFAULT</var>,
+	  <var>SQL_OV_ODBC2</var>,
+	  <var>SQL_OV_ODBC3</var>
+	<dt>Info types for
+          <a href=#get_info><code>ODBC::Database.get_info</code></a>
+          yielding integer results:
+	<dd><var>SQL_ACTIVE_ENVIRONMENTS</var>,
+          <var>SQL_ACTIVE_CONNECTIONS</var>,
+	  <var>SQL_ACTIVE_STATEMENTS</var>,
+	  <var>SQL_ASYNC_MODE</var>,
+	  <var>SQL_CATALOG_LOCATION</var>,
+	  <var>SQL_CONCAT_NULL_BEHAVIOR</var>,
+	  <var>SQL_CORRELATION_NAME</var>,
+	  <var>SQL_CURSOR_COMMIT_BEHAVIOR</var>,
+	  <var>SQL_CURSOR_ROLLBACK_BEHAVIOR</var>,
+	  <var>SQL_CURSOR_SENSITIVITY</var>,
+	  <var>SQL_DDL_INDEX</var>,
+	  <var>SQL_DEFAULT_TXN_ISOLATION</var>,
+	  <var>SQL_DRIVER_HDBC</var>,
+	  <var>SQL_DRIVER_HENV</var>,
+	  <var>SQL_DRIVER_HDESC</var>,
+	  <var>SQL_DRIVER_HLIB</var>,
+	  <var>SQL_DRIVER_HSTMT</var>,
+	  <var>SQL_FILE_USAGE</var>,
+	  <var>SQL_GROUP_BY</var>,
+	  <var>SQL_IDENTIFIER_CASE</var>,
+	  <var>SQL_MAX_ASYNC_CONCURRENT_STATEMENTS</var>,
+	  <var>SQL_MAX_BINARY_LITERAL_LEN</var>,
+	  <var>SQL_MAX_CATALOG_NAME_LEN</var>,
+	  <var>SQL_MAX_CHAR_LITERAL_LEN</var>,
+	  <var>SQL_MAX_COLUMN_NAME_LEN</var>,
+	  <var>SQL_MAX_COLUMNS_IN_GROUP_BY</var>,
+	  <var>SQL_MAX_COLUMNS_IN_INDEX</var>,
+	  <var>SQL_MAX_COLUMNS_IN_ORDER_BY</var>,
+	  <var>SQL_MAX_COLUMNS_IN_SELECT</var>,
+	  <var>SQL_MAX_COLUMNS_IN_TABLE</var>,
+	  <var>SQL_MAX_CONCURRENT_ACTIVITIES</var>,
+	  <var>SQL_MAX_CURSOR_NAME_LEN</var>,
+	  <var>SQL_MAX_DRIVER_CONNECTIONS</var>,
+	  <var>SQL_MAX_IDENTIFIER_LEN</var>,
+	  <var>SQL_MAX_INDEX_SIZE</var>,
+	  <var>SQL_MAX_OWNER_NAME_LEN</var>,
+	  <var>SQL_MAX_PROCEDURE_NAME_LEN</var>,
+	  <var>SQL_MAX_QUALIFIER_NAME_LEN</var>,
+	  <var>SQL_MAX_ROW_SIZE</var>,
+	  <var>SQL_MAX_SCHEMA_NAME_LEN</var>,
+	  <var>SQL_MAX_STATEMENT_LEN</var>,
+	  <var>SQL_MAX_TABLE_NAME_LEN</var>,
+	  <var>SQL_MAX_TABLES_IN_SELECT</var>,
+	  <var>SQL_MAX_USER_NAME_LEN</var>,
+	  <var>SQL_NON_NULLABLE_COLUMNS</var>,
+	  <var>SQL_NULL_COLLATION</var>,
+	  <var>SQL_ODBC_API_CONFORMANCE</var>,
+	  <var>SQL_ODBC_INTERFACE_CONFORMANCE</var>,
+	  <var>SQL_ODBC_SAG_CLI_CONFORMANCE</var>,
+	  <var>SQL_ODBC_SQL_CONFORMANCE</var>,
+	  <var>SQL_PARAM_ARRAY_ROW_COUNTS</var>,
+	  <var>SQL_PARAM_ARRAY_SELECTS</var>,
+	  <var>SQL_QUALIFIER_LOCATION</var>,
+	  <var>SQL_QUOTED_IDENTIFIER_CASE</var>,
+	  <var>SQL_SQL_CONFORMANCE</var>,
+	  <var>SQL_TXN_CAPABLE</var>
+	<dt>Info types for
+          <a href=#get_info><code>ODBC::Database.get_info</code></a>
+          yielding bitmasks (integer results):
+        <dd><var>SQL_AGGREGATE_FUNCTIONS</var>,
+          <var>SQL_ALTER_DOMAIN</var>,
+          <var>SQL_ALTER_TABLE</var>,
+          <var>SQL_BATCH_ROW_COUNT</var>,
+          <var>SQL_BATCH_SUPPORT</var>,
+          <var>SQL_BOOKMARK_PERSISTENCE</var>,
+          <var>SQL_CATALOG_USAGE</var>,
+          <var>SQL_CONVERT_BINARY</var>,
+          <var>SQL_CONVERT_BIT</var>,
+          <var>SQL_CONVERT_CHAR</var>,
+          <var>SQL_CONVERT_GUID</var>,
+          <var>SQL_CONVERT_DATE</var>,
+          <var>SQL_CONVERT_DECIMAL</var>,
+          <var>SQL_CONVERT_DOUBLE</var>,
+          <var>SQL_CONVERT_FLOAT</var>,
+          <var>SQL_CONVERT_FUNCTIONS</var>,
+          <var>SQL_CONVERT_INTEGER</var>,
+          <var>SQL_CONVERT_INTERVAL_YEAR_MONTH</var>,
+          <var>SQL_CONVERT_INTERVAL_DAY_TIME</var>,
+          <var>SQL_CONVERT_LONGVARBINARY</var>,
+          <var>SQL_CONVERT_LONGVARCHAR</var>,
+          <var>SQL_CONVERT_NUMERIC</var>,
+          <var>SQL_CONVERT_REAL</var>,
+          <var>SQL_CONVERT_SMALLINT</var>,
+          <var>SQL_CONVERT_TIME</var>,
+          <var>SQL_CONVERT_TIMESTAMP</var>,
+          <var>SQL_CONVERT_TINYINT</var>,
+          <var>SQL_CONVERT_VARBINARY</var>,
+          <var>SQL_CONVERT_VARCHAR</var>,
+          <var>SQL_CONVERT_WCHAR</var>,
+          <var>SQL_CONVERT_WLONGVARCHAR</var>,
+          <var>SQL_CONVERT_WVARCHAR</var>,
+          <var>SQL_CREATE_ASSERTION</var>,
+          <var>SQL_CREATE_CHARACTER_SET</var>,
+          <var>SQL_CREATE_COLLATION</var>,
+          <var>SQL_CREATE_DOMAIN</var>,
+          <var>SQL_CREATE_SCHEMA</var>,
+          <var>SQL_CREATE_TABLE</var>,
+          <var>SQL_CREATE_TRANSLATION</var>,
+          <var>SQL_CREATE_VIEW</var>,
+          <var>SQL_DATETIME_LITERALS</var>,
+          <var>SQL_DROP_ASSERTION</var>,
+          <var>SQL_DROP_CHARACTER_SET</var>,
+          <var>SQL_DROP_COLLATION</var>,
+          <var>SQL_DROP_DOMAIN</var>,
+          <var>SQL_DROP_SCHEMA</var>,
+          <var>SQL_DROP_TABLE</var>,
+          <var>SQL_DROP_TRANSLATION</var>,
+          <var>SQL_DROP_VIEW</var>,
+          <var>SQL_DTC_TRANSITION_COST</var>,
+          <var>SQL_DYNAMIC_CURSOR_ATTRIBUTES1</var>,
+          <var>SQL_DYNAMIC_CURSOR_ATTRIBUTES2</var>,
+          <var>SQL_FETCH_DIRECTION</var>,
+          <var>SQL_FORWARD_ONLY_CURSOR_ATTRIBUTES1</var>,
+          <var>SQL_FORWARD_ONLY_CURSOR_ATTRIBUTES2</var>,
+          <var>SQL_GETDATA_EXTENSIONS</var>,
+          <var>SQL_KEYSET_CURSOR_ATTRIBUTES1</var>,
+          <var>SQL_KEYSET_CURSOR_ATTRIBUTES2</var>,
+          <var>SQL_INDEX_KEYWORDS</var>,
+          <var>SQL_INFO_SCHEMA_VIEWS</var>,
+          <var>SQL_INSERT_STATEMENT</var>,
+          <var>SQL_LOCK_TYPES</var>,
+          <var>SQL_NUMERIC_FUNCTIONS</var>,
+          <var>SQL_OJ_CAPABILITIES</var>,
+          <var>SQL_OWNER_USAGE</var>,
+          <var>SQL_POS_OPERATIONS</var>,
+          <var>SQL_POSITIONED_STATEMENTS</var>,
+          <var>SQL_QUALIFIER_USAGE</var>,
+          <var>SQL_SCHEMA_USAGE</var>,
+          <var>SQL_SCROLL_CONCURRENCY</var>,
+          <var>SQL_SCROLL_OPTIONS</var>,
+          <var>SQL_SQL92_DATETIME_FUNCTIONS</var>,
+          <var>SQL_SQL92_FOREIGN_KEY_DELETE_RULE</var>,
+          <var>SQL_SQL92_FOREIGN_KEY_UPDATE_RULE</var>,
+          <var>SQL_SQL92_GRANT</var>,
+          <var>SQL_SQL92_NUMERIC_VALUE_FUNCTIONS</var>,
+          <var>SQL_SQL92_PREDICATES</var>,
+          <var>SQL_SQL92_RELATIONAL_JOIN_OPERATORS</var>,
+          <var>SQL_SQL92_REVOKE</var>,
+          <var>SQL_SQL92_ROW_VALUE_CONSTRUCTOR</var>,
+          <var>SQL_SQL92_STRING_FUNCTIONS</var>,
+          <var>SQL_SQL92_VALUE_EXPRESSIONS</var>,
+          <var>SQL_STANDARD_CLI_CONFORMANCE</var>,
+          <var>SQL_STATIC_CURSOR_ATTRIBUTES1</var>,
+          <var>SQL_STATIC_CURSOR_ATTRIBUTES2</var>,
+          <var>SQL_STATIC_SENSITIVITY</var>,
+          <var>SQL_STRING_FUNCTIONS</var>,
+          <var>SQL_SUBQUERIES</var>,
+          <var>SQL_SYSTEM_FUNCTIONS</var>,
+          <var>SQL_TIMEDATE_ADD_INTERVALS</var>,
+          <var>SQL_TIMEDATE_DIFF_INTERVALS</var>,
+          <var>SQL_TIMEDATE_FUNCTIONS</var>,
+          <var>SQL_TXN_ISOLATION_OPTION</var>,
+          <var>SQL_UNION</var>
+	<dt>Info types for
+          <a href=#get_info><code>ODBC::Database.get_info</code></a>
+          yielding strings:
+        <dd><var>SQL_ACCESSIBLE_PROCEDURES</var>,
+          <var>SQL_ACCESSIBLE_TABLES</var>,
+          <var>SQL_CATALOG_NAME</var>,
+          <var>SQL_CATALOG_NAME_SEPARATOR</var>,
+          <var>SQL_CATALOG_TERM</var>,
+          <var>SQL_COLLATION_SEQ</var>,
+          <var>SQL_COLUMN_ALIAS</var>,
+          <var>SQL_DATA_SOURCE_NAME</var>,
+          <var>SQL_DATA_SOURCE_READ_ONLY</var>,
+          <var>SQL_DATABASE_NAME</var>,
+          <var>SQL_DBMS_NAME</var>,
+          <var>SQL_DBMS_VER</var>,
+          <var>SQL_DESCRIBE_PARAMETER</var>,
+          <var>SQL_DM_VER</var>,
+          <var>SQL_DRIVER_NAME</var>,
+          <var>SQL_DRIVER_ODBC_VER</var>,
+          <var>SQL_DRIVER_VER</var>,
+          <var>SQL_EXPRESSIONS_IN_ORDERBY</var>,
+          <var>SQL_IDENTIFIER_QUOTE_CHAR</var>,
+          <var>SQL_INTEGRITY</var>,
+          <var>SQL_KEYWORDS</var>,
+          <var>SQL_LIKE_ESCAPE_CLAUSE</var>,
+          <var>SQL_MAX_ROW_SIZE_INCLUDES_LONG</var>,
+          <var>SQL_MULT_RESULT_SETS</var>,
+          <var>SQL_MULTIPLE_ACTIVE_TXN</var>,
+          <var>SQL_NEED_LONG_DATA_LEN</var>,
+          <var>SQL_ODBC_SQL_OPT_IEF</var>,
+          <var>SQL_ODBC_VER</var>,
+          <var>SQL_ORDER_BY_COLUMNS_IN_SELECT</var>,
+          <var>SQL_OUTER_JOINS</var>,
+          <var>SQL_OWNER_TERM</var>,
+          <var>SQL_PROCEDURE_TERM</var>,
+          <var>SQL_PROCEDURES</var>,
+          <var>SQL_QUALIFIER_NAME_SEPARATOR</var>,
+          <var>SQL_QUALIFIER_TERM</var>,
+          <var>SQL_ROW_UPDATES</var>,
+          <var>SQL_SCHEMA_TERM</var>,
+          <var>SQL_SEARCH_PATTERN_ESCAPE</var>,
+          <var>SQL_SERVER_NAME</var>,
+          <var>SQL_SPECIAL_CHARACTERS</var>,
+          <var>SQL_TABLE_TERM</var>,
+          <var>SQL_USER_NAME</var>,
+          <var>SQL_XOPEN_CLI_YEAR</var>
+	<dt>Options for
+          <a href="#dbc_get_option"><code>ODBC::Database.get_option</code></a>,
+          <a href="#dbc_set_option"><code>ODBC::Database.set_option</code></a>,
+          <a href="#stmt_get_option"><code>ODBC::Statement.get_option</code></a>,
+	  and	  
+          <a href="#stmt_set_option"><code>ODBC::Statement.set_option</code></a>
+          yielding integers:
+	<dd><var>SQL_AUTOCOMMIT</var>,
+	  <var>SQL_CONCURRENCY</var>,
+	  <var>SQL_QUERY_TIMEOUT</var>,
+	  <var>SQL_MAX_ROWS</var>,
+	  <var>SQL_MAX_LENGTH</var>,
+	  <var>SQL_NOSCAN</var>,
+	  <var>SQL_ROWSET_SIZE</var>,
+	  <var>SQL_CURSOR_TYPE</var>
+      </dl>
+    </div>
+    <hr>
+    <div>
+      <h2><a name="ODBC::Object">ODBC::Object</a></h2>
+      <p>
+	The class to represent the root of all other ODBC related objects.
+      </p>
+      <h3>super class:</h3>
+      <code>Object</code>
+      <h3>methods:</h3>
+      <dl>
+	<dt><a name="ODBC::Object.error"><code>error</code></a>
+        <dd>Returns the last error message (String) or nil. For further
+	  information see <a href="#ODBC::error">ODBC::error</a>.
+        <dt><a name="ODBC::Object.info"><code>info</code></a>
+	<dd>Returns the last driver/driver manager warning messages
+	  (String array) or nil.
+	  For further information see
+	  <a href="#ODBC::error">ODBC::error</a>.
+	<dt><a name="ODBC::Object.clear_error"><code>clear_error</code></a>
+	<dd>Resets the last driver/driver manager error and warning messages
+	  to nil.
+	<dt><a name="ODBC::Object.raise"><code>raise(<var>value</var>)</code>
+	  </a>
+        <dd>Raises an <a href="#ODBC::Error">ODBC::Error</a> exception with
+	  String error message <var>value</var>.
+      </dl>
+      <h3>singleton methods:</h3>
+      <dl>
+        <dt><a name="ODBC::Object.error2"><code>error</code></a>
+	<dd>Returns the last error message (String array) or nil.
+	  For further information see
+	  <a href="#ODBC::error">ODBC::error</a>.
+        <dt><a name="ODBC::Object.info2"><code>info</code></a>
+	<dd>Returns the last driver/driver manager warning messages
+	  (String array) or nil.
+	  For further information see
+	  <a href="#ODBC::error">ODBC::error</a>.
+	<dt><a name="ODBC::Object.clear_error2"><code>clear_error</code></a>
+	<dd>Resets the last driver/driver manager error and warning messages
+	  to nil.
+	<dt><a name="ODBC::Object.raise2"><code>raise(<var>value</var>)</code>
+	  </a>
+        <dd>Raises an <a href="#ODBC::Error">ODBC::Error</a> exception with
+	  String error message <var>value</var>.
+      </dl>
+    </div>
+    <hr>
+    <div>
+      <h2><a name="ODBC::Environment">ODBC::Environment</a></h2>
+      <p>
+	The class to represent the environment for
+	<a href="#ODBC::Database">ODBC::Database</a>s.
+      </p>
+      <h3>super class:</h3>
+      <code><a href="#ODBC::Object">ODBC::Object</a></code>
+      <h3>methods:</h3>
+      <dl>
+	<dt><a name="ODBC::Environment.connect"><code>connect(<var>dsn</var>,[<var>user</var>,<var>passwd</var>])</code></a>
+        <dd>Connects to an ODBC data source and returns a
+	  <a href="#ODBC::Database">ODBC::Database</a> object.
+	  Options are:
+	  <dl>
+	    <dd><var>dsn</var>: Data source name (String or
+	      <a href="#ODBC::DSN">ODBC::DSN</a>)
+	    <dd><var>user</var>: Login user name (String)
+	    <dd><var>passwd</var>: Login password (String)
+	  </dl>
+	<dt><a name="ODBC::Environment.environment"><code>environment</code>
+	  </a>
+        <dd>Returns the <a href="#ODBC::Environment">ODBC::Environment</a>
+	  of the object.
+	<dt> <a name="commit"><code>commit</code></a>
+	<dd>Commits the current transaction.
+	<dt> <a name="rollback"><code>rollback</code></a>
+        <dd>Rollbacks the current transaction.
+	<dt><a name="ODBC::Environment.transaction">
+	    <code>transaction {|<var>env</var>| <var>block</var>}</code></a>
+        <dd>First commits the current transaction, then executes the given
+	  block where the paramater is the object itself (an environment or
+	  a database connection). If the block raises an exception, the
+	  transaction is rolled back, otherwise committed.
+	<dt><a name="ODBC::Environment.connection_pooling">
+	    <code>connection_pooling[=<var>value</var>]</code></a>
+        <dd>Gets or sets the connection pooling attribute of the environment.
+	<dt><a name="ODBC::Environment.cp_match">
+	    <code>cp_match[=<var>value</var>]</code></a>
+        <dd>Gets or sets the connection pooling match attribute of the
+	  environment.
+	<dt><a name="ODBC::Environment.odbc_version">
+	    <code>odbc_version[=<var>value</var>]</code></a>
+        <dd>Gets or sets the ODBC version attribute of the environment.
+      </dl>
+      <h3>singleton methods:</h3>
+      <dl>
+	<dt><a name="ODBC::Environment.new"><code>new</code></a>
+	<dd>Returns a new <a href="#ODBC::Environment">ODBC::Environment</a>
+	  object.
+      </dl>
+    </div>
+    <hr>
+    <div>
+      <h2><a name="ODBC::Database">ODBC::Database</a></h2>
+      <p>
+	The class to represent a connection to an ODBC data source.
+      </p>
+      <p>
+	When underlying ODBC SQL functions report an error,
+	an <a href="#ODBC::Error">ODBC::Error</a>
+	exception with a corresponding error message from the ODBC
+	driver manager and/or driver is raised.
+      </p>
+      <h3>super class:</h3>
+      <code><a href="#ODBC::Environment">ODBC::Environment</a></code>
+      <h3>methods:</h3>
+      <dl>
+	<dt><a name="connected?"><code>connected?</code></a>
+	<dd>Returns <code>true</code> when the object is in connected
+	  state, false otherwise.
+	<dt><a name="drvconnect"><code>drvconnect(<var>drv</var>)</code></a>
+	<dd>Connect to a data source specified by <var>drv</var>
+	  (<a href="#ODBC::Driver">ODBC::Driver</a>).
+	<dt><a name="disconnect">
+	  <code>disconnect(<var>no_drop=false</var>)</code></a>
+	<dd>Disconnects from the data source, all active statements for the
+	  connection are dropped except when the <var>no_drop</var> argument
+	  is true. The method returns true when the connection was released,
+	  false otherwise.
+	<dt><a name="newstmt"><code>newstmt</code></a>
+	<dd>Returns a new <a href="#ODBC::Statement">ODBC::Statement</a>
+	 object without preparing or executing a SQL statement. This allows
+	 to use
+	 <a href="#stmt_set_option"><code>ODBC::Statement.set_option</code></a>
+	 to set special options on the statement before actual execution.
+	<dt><a name="tables"><code>tables([<var>pattern</var>])</code></a>
+	<dd>Returns an <a href="#ODBC::Statement">ODBC::Statement</a> with
+	  information of all or some (<var>pattern</var> String given)
+	  tables of the data source.
+	<dt><a name="columns"><code>columns([<var>table</var>[,<var>column</var>]])</code></a>
+	<dd>Returns an <a href="#ODBC::Statement">ODBC::Statement</a>
+	  with column information
+	  of the given <var>table</var> (String) and optional
+	  <var>column</var> (String).
+	<dt><a name="indexes">
+	  <code>indexes([<var>table</var>[,<var>unique</var>]])</code></a>
+	<dd>Returns an <a href="#ODBC::Statement">ODBC::Statement</a>
+	  with index information
+	  of the given <var>table</var> (String). If <var>unique</var>
+	  is given and true, information for unique indexes only is
+	  returned.
+	<dt><a name="types"><code>types([<var>tcode</var>])</code></a>
+	<dd>Returns an <a href="#ODBC::Statement">ODBC::Statement</a>
+	  with type information
+	  of the numeric SQL type <var>tcode</var> or all types if
+	  <var>tcode</var> is omitted.
+	<dt><a name="primary_keys">
+	    <code>primary_keys([<var>table</var>])</code></a>
+	<dd>Returns an <a href="#ODBC::Statement">ODBC::Statement</a>
+	  with primary key information of the given <var>table</var> (String).
+	<dt><a name="foreign_keys">
+	    <code>foreign_keys([<var>table</var>])</code></a>
+	<dd>Returns an <a href="#ODBC::Statement">ODBC::Statement</a>
+	  with foreign key information of the given <var>table</var> (String).
+	<dt><a name="table_privileges">
+	    <code>table_privileges([<var>table</var>])</code></a>
+	<dd>Returns an <a href="#ODBC::Statement">ODBC::Statement</a>
+	  with owner/right information of the given <var>table</var> (String).
+	<dt><a name="procedures"><code>procedures([<var>p</var>])</code></a>
+	<dd>Returns an <a href="#ODBC::Statement">ODBC::Statement</a>
+	  with information about stored procedures.
+	<dt><a name="procedure_columns">
+	    <code>procedure_columns([<var>p</var>])</code></a>
+	<dd>Returns an <a href="#ODBC::Statement">ODBC::Statement</a>
+	  with information about stored procedures.
+	<dt><a name="special_columns">
+	  <code>special_columns([<var>table</var>[,<var>id</var>,<var>scope</var>]])</code></a>
+	<dd>Returns an <a href="#ODBC::Statement">ODBC::Statement</a>
+	  with column information
+	  of the given <var>table</var> (String) indicating the
+	  optimal unique or identifying columns.
+	  <var>id</var> may
+	  be specified as <code>ODBC::SQL_BEST_ROWID</code> or
+	  <code>ODBC::SQL_ROW_VER</code>. <var>scope</var> may be
+	  specified as <code>ODBC::SQL_SCOPE_CURROW</code>,
+	  <code>ODBC::SQL_SCOPE_TRANSACTION</code>, or
+	  <code>ODBC::SQL_SCOPE_SESSION</code>. If omitted the
+	  defaults are <code>ODBC::SQL_BEST_ROWID</code> and
+	  <code>ODBC::SQL_SCOPE_CURROW</code>.
+	<dt><a name="get_info">
+	  <code>get_info(<var>info_type</var>[,<var>sql_type</var>])</code></a>
+	<dd>Retrieves database meta data according to <var>info_type</var>
+          and returns numbers or strings. <var>info_type</var> may be specified
+          as integer or string. To force interpretation of the return value
+          of the underlying ODBC function <code>SQLGetInfo()</code> as a
+          specific Ruby type the optional parameter <var>sql_type</var>
+          can be given as e.g.
+          <code>ODBC::SQL_SMALLINT</code> (yielding integer), 
+          <code>ODBC::SQL_INTEGER</code> (yielding integer), and
+          <code>ODBC::SQL_CHAR</code> (yielding string).
+	<dt><a name="run"><code>run(<var>sql</var>[,<var>args...</var>])</code></a>
+	<dd>Prepares and executes the query specified by <var>sql</var>
+	  with parameters bound from <var>args</var> and returns an
+	  <a href="#ODBC::Statement">ODBC::Statement</a> or nil, if
+	  the query did not produce a result set, e.g. when executing
+	  SQL insert, delete, or update statements.
+	<dt><a name="do"><code>do(<var>sql</var>[,<var>args...</var>])</code></a>
+	<dd>Prepares and executes the query as in
+	  <a href="#run"><code>run</code></a>,
+	  but returns the number of result rows and automatically drops
+	  the statement. Useful for SQL insert, delete, or update statements.
+	<dt><a name="prepare"><code>prepare(<var>sql</var>)</code></a>
+	<dd>Prepares the query specified by <var>sql</var> and returns
+	  an <a href="#ODBC::Statement">ODBC::Statement</a>.
+	<dt><a name="proc"><code>proc(<var>sql</var>,[<var>type</var>,<var>size</var>[,<var>n</var>=1]])
+	      {|<var>stmt</var>| <var>block</var>}</code></a>
+	<dd>Prepares the query specified by <var>sql</var> within a
+	  <a href="#ODBCProc">ODBCProc</a> and returns that procedure.
+	  When the procedure is called, the statement is executed with
+	  the procedure's arguments bound to the statement's parameters
+	  and the statement is bound as parameter in the block, e.g.
+	  <pre># add customer given name and id
+# and return number of affected rows
+
+addcust = dbc.proc("insert into customer values(?, ?)") { |stmt|
+    stmt.nrows
+}
+
+addcust.call("J.R. User", 9999)
+
+# alternative to call: addcust["J.R. User", 9999]</pre>
+	  The optional arguments <var>type</var>, <var>size</var>, and
+	  <var>n</var>,
+	  make the n-th statement parameter into an output parameter
+	  with that given ODBC data type and size. That statement
+	  parameter must be omitted when the <a href="#ODBCProc">ODBCProc</a>
+	  is called. This can be useful for wrapping stored procedures, e.g.
+	  <pre># wrap statement with output parameter
+
+aproc = dbc.proc("{ ? = call stored_proc(?) }", ODBC::SQL_INTEGER, 4) {}
+
+# call this statement/procedure, output parameter is result
+
+result = aproc.call(99)
+
+# alternative to call: result = aproc[99]</pre>
+	  Finalization of an <a href="#ODBCProc">ODBCProc</a> can be
+	  done according to this code snippet
+	  <pre># aproc is wrapped statement, finalize it now
+
+aproc.statement.drop</pre>
+	<dt><a name="dbc_get_option">
+	    <code>get_option(<var>option</var>)</code></a>
+	<dd>Gets a connection level option. <var>option</var> can be a
+	  module constant, e.g. <var>SQL_MAX_ROWS</var>, a number, or a
+	  string. This method returns the integer value of that option.
+	<dt><a name="dbc_set_option">
+	    <code>set_option(<var>option</var>,<var>intval</var>)</code></a>
+	<dd>Sets a connection level option. <var>option</var> can be a
+	  module constant, e.g. <var>SQL_MAX_ROWS</var>, a number, or a
+	  string. The second parameter <var>intval</var> can be used to
+	  set driver-specific statement options.
+	<dt><a name="autocommit"><code>autocommit[=<var>bool</var>]</code></a>
+	<dd>Sets or queries the autocommit option of the connection.
+	<dt><a name="concurrency">
+	    <code>concurrency[=<var>intval</var>]</code></a>
+	<dd>Sets or queries the concurrency mode of cursors opened on
+	  the connection.
+	<dt><a name="maxrows"><code>maxrows[=<var>intval</var>]</code></a>
+	<dd>Sets or queries the maximum rows returned in result sets from
+	  the connection.
+	<dt><a name="timeout"><code>timeout[=<var>intval</var>]</code></a>
+	<dd>Sets or queries the number of seconds to wait for queries to
+	  execute on the connection before returning.
+	<dt><a name="maxlength"><code>maxlength[=<var>intval</var>]</code></a>
+	<dd>Sets or queries the maximum amount of data that will be returned
+          from a character or binary column.
+	<dt><a name="cursortype">
+	    <code>cursortype[=<var>intval</var>]</code></a>
+	<dd>Sets or queries the cursor type used for fetches.
+	<dt><a name="noscan"><code>noscan[=<var>bool</var>]</code></a>
+	<dd>Sets or queries whether the driver scans SQL strings for ODBC
+          escape clauses.
+	<dt><a name="rowsetsize"><code>rowsetsize</code></a>
+	<dd>Returns the number of rows in a rowset fetched internally by a
+	  call o SQLExtendedFetch (hardcoded to 1).
+	<dt><a name="ignorecase"><code>ignorecase[=<var>bool</var>]</code><a>
+	<dd>Sets or queries the uppercase conversion for column names. If
+	  turned on (<var>bool</var> is true),
+	  <a href="#ODBC::Statement">ODBC::Statement</a>s
+	  created by database methods will report column names in
+	  <a href="#ODBC::Column">ODBC::Column</a>
+	  or in the statement fetch methods
+	  as uppercase strings. Otherwise (the default) column names are
+	  passed unmodified.
+	<dt><a name="drop_all"><code>drop_all</code></a>
+	<dd>Releases the resources of all open
+	  <a href="#ODBC::Statement">ODBC::Statement</a>s in this
+	  database connection.
+	<dt><a name="use_time"><code>use_time[=<var>bool</var>]</code></a>
+	<dd>Sets or queries the mapping of SQL_DATE, SQL_TIME, and
+	  SQL_TIMESTAMP data types to Ruby objects. When true,
+	  SQL_DATE is mapped to Ruby Date objects, SQL_TIME and
+	  SQL_TIMESTAMP are mapped to Ruby Time objects. Otherwise (default)
+          <a href="#ODBC::Date">ODBC::Date</a>,
+          <a href="#ODBC::Time">ODBC::Time</a>, and
+          <a href="#ODBC::Time">ODBC::TimeStamp</a> are used.
+	<dt><a name="use_utc"><code>use_utc[=<var>bool</var>]</code></a>
+	<dd>Sets or queries the timezone applied on SQL_DATE, SQL_TIME, and
+	  SQL_TIMESTAMP data types to Ruby objects. When true,
+	  Ruby Date and Time objects are represented in UTC, when
+	  false (default) in the local timezone.
+      </dl>
+      <h3>singleton methods:</h3>
+      <dl>
+	<dt><a name="ODBC::new"><code>new</code></a>
+        <dd>Creates an unconnected ODBC object, e.g. for a later
+	  <code>drvconnect</code> method call.
+	<dt><a name="ODBC::new2"><code>new(<var>dsn</var>,[<var>user</var>,<var>passwd</var>])</code></a>
+        <dd>Connect to an ODBC data source. Options are:
+	  <dl>
+	    <dd><var>dsn</var>: Data source name (String or
+	      <a href="#ODBC::DSN">ODBC::DSN</a>)
+	    <dd><var>user</var>: Login user name (String)
+	    <dd><var>passwd</var>: Login password (String)
+	  </dl>
+      </dl>
+      <h3>Remarks:</h3>
+      The <a href="#run"><code>run</code></a>,
+      <a href="#prepare"><code>prepare</code></a>,
+      <a href="#do"><code>do</code></a>, and info methods
+      (e.g. <a href="#tables"><code>tables</code></a>)
+      can be invoked with a block. In this case the block is executed with
+      the <a href="#ODBC::Statement">ODBC::Statement</a> as parameter. The
+      <a href="#run"><code>run</code></a> and
+      <a href="#do"><code>do</code></a> methods use the ODBC API
+      function <code>SQLExecDirect()</code> when the SQL statement has no
+      parameters.
+    </div>
+    <hr>
+    <div>
+      <h2><a name="ODBC::Statement">ODBC::Statement</a></h2>
+      <p>
+	The class to represent a query and its query result.
+	The object of this class is created as the result of every query.
+	You may need to invoke the <a href="#close"><code>close</code></a>
+	or <a href="#drop"><code>drop</code></a> methods for the
+	finished object for better memory performance.
+      </p>
+      <p>
+	When underlying ODBC SQL functions report an error,
+	an <a href="#ODBC::Error">ODBC::Error</a>
+	exception with a corresponding error message from the ODBC driver
+	manager and/or driver is raised.
+      </p>
+      <p>
+	ODBC to Ruby type mapping:
+      </p>
+      <table><tr><th>ODBC</th><th>Ruby</th></tr>
+	<tr><td>SQL_SMALLINT, SQL_INTEGER, SQL_TINYINT, SQL_BIT</td>
+	  <td>T_FIXNUM, T_BIGNUM</td></tr>
+	<tr><td>SQL_FLOAT, SQL_DOUBLE, SQL_REAL</td><td>T_FLOAT</td></tr>
+	<tr><td>SQL_DATE, SQL_TYPE_DATE</td>
+	  <td><a href="#ODBC::Date">ODBC::Date</a> or Date,
+	   see <a href="#use_time">ODBC::Database.use_time</a>
+	  </td></tr>
+	<tr><td>SQL_TIME, SQL_TYPE_TIME</td>
+	  <td><a href="#ODBC::Time">ODBC::Time</a> or Time,
+	   see <a href="#use_time">ODBC::Database.use_time</a>
+	  </td></tr>
+	<tr><td>SQL_TIMESTAMP, SQL_TYPE_TIMESTAMP</td>
+	  <td><a href="#ODBC::TimeStamp">ODBC::TimeStamp</a> or Time,
+	   see <a href="#use_time">ODBC::Database.use_time</a>
+	  </td></tr>
+	<tr><td>all others</td><td>T_STRING</td></tr>
+      </table>
+      <h3>super class:</h3>
+      <p>
+	<code><a href="#ODBC::Database">ODBC::Database</a></code>
+      </p>
+      <h3>mixins:</h3>
+      <p>
+	<code>Enumerable</code>
+      </p>
+      <h3>methods:</h3>
+      <dl>
+	<dt><a name="cancel"><code>cancel</code></a>
+	<dd>Cancel and close the
+	  <a href="#ODBC::Statement">ODBC::Statement</a>.
+	<dt><a name="close"><code>close</code></a>
+	<dd>Close the <a href="#ODBC::Statement">ODBC::Statement</a>.
+	<dt><a name="drop"><code>drop</code></a>
+	<dd>Close and free the <a href="#ODBC::Statement">ODBC::Statement</a>.
+	<dt><a name="column"><code>column(<var>n</var>)</code></a>
+	<dd>Returns information of the n-th column of the query result
+	  as <a href="#ODBC::Column">ODBC::Column</a>.
+	<dt><a name="columns1"><code>columns(<var>as_ary=false</var>)</code></a>
+	<dd>Returns a hash of column information keyed by column names
+	  (Strings) of the query result. If <var>as_ary</var> is true,
+	  an array is returned. In both cases the elements are
+	  <a href="#ODBC::Column">ODBC::Column</a>s. If the hash keys
+	  happen to be not unique later columns get their column number
+	  appended, e.g. <code>FOOBAR</code>, <code>FOOBAR#1</code>.
+	<dt><a name="columns2"><code>columns
+	  {|<var>col</var>| <var>block</var>}</code></a>
+	<dd>Iterates over the columns of the query result with <var>col</var>
+          bound to each <a href="#ODBC::Column">ODBC::Column</a>.
+	<dt><a name="ncols"><code>ncols</code></a>
+	<dd>Returns the number of columns of the query result.
+	<dt><a name="nrows"><code>nrows</code></a>
+	<dd>Returns the number of rows of the query result.
+	<dt><a name="cursorname"><code>cursorname[=<var>name</var>]</code></a>
+	<dd>Returns or sets the cursor name of the statement.
+	<dt><a name="ignorecase2"><code>ignorecase[=<var>bool</var>]</code><a>
+	<dd>Same as
+	  <a href="#ignorecase"><code>ODBC::Database.ignorecase</code></a>
+	  but affecting this statement only.
+	  Inherited by the current state of the
+	  <a href="#ODBC::Database">ODBC::Database</a> at the time the
+	  statement is created.
+	<dt><a name="fetch"><code>fetch</code></a>
+	<dd>Returns the next row of the query result as an array.
+	<dt><a name="fetch_first"><code>fetch_first</code></a>
+	<dd>Returns the first row of the query result as an array.
+	<dt><a name="fetch_scroll"><code>fetch_scroll(<var>direction</var>,
+	      <var>offset=1</var>)</code></a>
+	<dd>Returns the row addressed by <var>direction</var>, e.g.
+	  <code>SQL_FETCH_LAST</code> as an array. <var>offset</var> is
+	  used for <code>SQL_FETCH_RELATIVE</code> and
+	  <code>SQL_FETCH_ABSOLUTE</code>.
+	<dt><a name="fetch_many"><code>fetch_many(<var>count</var>)</code></a>
+	<dd>Returns an array of the next <var>count</var> rows of the query
+	  result, where each row is an array.
+	<dt><a name="fetch_all"><code>fetch_all</code></a>
+	<dd>Same as <code>fetch_many</code> except that all remaining rows
+	  are returned.
+	<dt><a name="fetch_hash">
+	    <code>fetch_hash(<var>with_table_names=false</var>,<var>use_sym=false</var>)</code></a>
+	<dd>Returns the next row of the query result as a hash keyed by
+	  column names. If <var>with_table_names</var> is true,
+	  the keys are combined table/column names. For uniqueness of keys
+	  the same rules as in the <a href="#columns1"><code>columns</code></a>
+	  method are applied. If <var>use_sym</var> is true,
+	  the keys are formed by intern'ing the (table and) column names.
+	  Alternatively, one hash argument can be presented to
+	  <code>fetch_hash</code>, e.g.
+	  <code>{ :key =&gt; :Symbol, :table_names =&gt; false }</code> or
+	  <code>{ :key =&gt; :String, :table_names =&gt; true }</code> or
+	  <code>{ :key =&gt; :Fixnum }</code>.
+	<dt><a name="each"><code>each {|<var>row</var>|
+	      <var>block</var>}</code></a>
+	<dd>Iterates over the query result, performing a <code>fetch</code>
+	  for each row.
+	<dt><a name="each_hash">
+	    <code>each_hash(<var>with_table_names=false</var>,<var>use_sym=false</var>)
+	      {|<var>row</var>| <var>block</var>}</code></a>
+	<dd>Iterates over the query result, performing a
+	  <code>fetch_hash</code> for each row. The same
+	  rules for arguments as in <code>fetch_hash</code> apply.
+	<dt><a name="execute"><code>execute([<var>args...</var>])</code></a>
+	<dd>Binds <var>args</var> to current query and executes it.
+	<dt><a name="stmt_run">
+	    <code>run(<var>sql</var>[,<var>args...</var>])</code></a>
+	<dd>Prepares and executes the query specified by <var>sql</var>
+	  with parameters bound from <var>args</var>.
+	<dt><a name="stmt_prep">
+	    <code>prepare(<var>sql</var>)</code></a>
+	<dd>Prepares the query specified by <var>sql</var>.
+	<dt><a name="more_results"><code>more_results</code></a>
+	<dd>Returns true and switches over to the next result set,
+	  if the query produced more than one result set. Otherwise
+	  returns false.
+	<dt><a name="stmt_get_option">
+	    <code>get_option(<var>option</var>)</code></a>
+	<dd>Gets a statement level option. <var>option</var> can be a
+	  module constant, e.g. <var>SQL_MAX_ROWS</var>, a number, or a
+	  string. This method returns the integer value of that option.
+	<dt><a name="stmt_set_option">
+	    <code>set_option(<var>option</var>,<var>intval</var>)</code></a>
+	<dd>Sets a statement level option. <var>option</var> can be a
+	  module constant, e.g. <var>SQL_MAX_ROWS</var>, a number, or a
+	  string. The second parameter <var>intval</var> can be used to
+	  set driver-specific statement options.
+	<dt><a name="stmt_concurrency">
+	    <code>concurrency[=<var>intval</var>]</code></a>
+	<dd>Sets or queries the concurrency mode of cursors opened on
+	  the statement.
+	<dt><a name="stmt_maxrows"><code>maxrows[=<var>intval</var>]</code></a>
+	<dd>Sets or queries the maximum rows returned by the statement.
+	<dt><a name="stmt_timeout"><code>timeout[=<var>intval</var>]</code></a>
+	<dd>Sets or queries the number of seconds to wait for the statement
+	  to execute before returning.
+	<dt><a name="stmt_maxlength">
+            <code>maxlength[=<var>intval</var>]</code></a>
+	<dd>Sets or queries the maximum amount of data that will be returned
+	  from a character or binary column.
+	<dt><a name="stmt_cursortype">
+	    <code>cursortype[=<var>intval</var>]</code></a>
+	<dd>Sets or queries the cursor type used for fetches.
+	<dt><a name="stmt_noscan"><code>noscan[=<var>bool</var>]</code></a>
+	<dd>Sets or queries whether the driver scans SQL strings for ODBC
+	  escape clauses.
+	<dt><a name="stmt_rowsetsize"><code>rowsetsize</code></a>
+	<dd>Returns the number of rows in a rowset fetched internally by
+	  a call to <var>SQLExtendedFetch</var> (hardcoded to 1).
+	<dt><a name="stmt_nparams"><code>nparams</code></a>
+	<dd>Returns the number of parameters of the statement.
+	<dt><a name="parameter"><code>parameter(<var>n</var>)</code></a>
+	<dd>Returns information of the n-th parameter of the query
+	  as <a href="#ODBC::Parameter">ODBC::Parameter</a>.
+	<dt><a name="parameters"><code>parameters</code></a>
+	<dd>Returns an array of
+	  <a href="#ODBC::Parameter">ODBC::Parameter</a>s describing
+	  all parameters of the query.
+	<dt><a name="stmt_param_type"><code>param_type(<var>n</var>[,<var>type</var>,<var>coldef</var>,<var>scale</var>])</code></a>
+	<dd>Allows to override the type of parameter <var>n</var>
+	and returns the current type. This can be useful
+	when the ODBC driver does not provide proper type information
+	on <var>SQLDescribeParam</var>.
+	<dt><a name="stmt_param_iotype"><code>param_iotype(<var>n</var>[,<var>iotype</var>])</code></a>
+	<dd>Allows to change the input/output type of parameter <var>n</var>
+	  and returns the current input/output type. By
+	  default, all parameters are <var>ODBC::SQL_PARAM_INPUT</var>.
+	  When calling a stored procedure in the statement, the output
+	  parameter must be altered using this method, e.g.
+	  <pre># assume 1st parameter is input, 2nd is output
+stmt = conn.prepare("call stored_proc( ?, ?)")
+# setup 2nd for output of an integer
+stmt.param_iotype(2, ODBC::SQL_PARAM_OUTPUT)
+stmt.param_output_type(2, ODBC::SQL_INTEGER)
+stmt.param_output_size(2, 4)
+# execute stmt and retrieve value of output parameter
+stmt.execute(42, nil)
+stmt.fetch_all
+out_value = stmt.param_output_value(2);</pre>
+	<dt><a name="stmt_param_output_type"><code>param_output_type(<var>n</var>[,<var>type</var>])</code></a>
+	<dd>Allows to change the SQL type of output parameter <var>n</var>
+	  and returns the current type. For further
+	  information see the sample code in the
+	  <a href="#stmt_param_iotype"><code>param_iotype</code></a> method.
+	<dt><a name="stmt_param_output_size"><code>param_output_size(<var>n</var>[,<var>size</var>])</code></a>
+	<dd>Allows to change the byte size of the buffer for output parameter
+	  <var>n</var> and returns the current size.
+	  For further information see the sample code in the
+	  <a href="#stmt_param_iotype"><code>param_iotype</code></a> method.
+	<dt><a name="stmt_param_output_value"><code>param_output_value(<var>n</var>)</code></a>
+	<dd>Returns the value of the output parameter <var>n</var>.
+	  For further information see the sample code in the
+	  <a href="#stmt_param_iotype"><code>param_iotype</code></a> method.
+	<dt><a name="make_proc1"><code>make_proc([<var>n</var>])</code></a>
+	<dd>Wraps the statement into a <a href="#ODBCProc">ODBCProc</a> object
+	  and returns that object. The optional <var>n</var> argument is
+	  the parameter number of the statement which is used as output
+	  parameter in the wrapped <a href="#ODBCProc">ODBCProc</a>. For
+	  further information refer to the samples in the description of
+	  <a href="#proc"><code>ODBC::Database.proc</code></a>.
+      </dl>
+      <h3>singleton methods:</h3>
+      <dl>
+	<dt><a name="make_proc2"><code>make_proc(<var>stmt</var>,[<var>n</var>])</code></a>
+	<dd>Wraps the statement <var>stmt</var> into a
+	  <a href="#ODBCProc">ODBCProc</a> object
+	  and returns that object. The optional <var>n</var> argument is
+	  the parameter number of the statement which is used as output
+	  parameter in the wrapped <a href="#ODBCProc">ODBCProc</a>. For
+	  further information refer to the samples in the description of
+	  <a href="#proc"><code>ODBC::Database.proc</code></a>.
+      </dl>
+      <h3>Remarks:</h3>
+      The <a href="#fetch"><code>fetch</code></a>,
+      <a href="#fetch_hash"><code>fetch_hash</code></a>,
+      and <a href="#execute"><code>execute</code></a>
+      methods can be invoked with a block. In this case the block is
+      executed with one row of the result set (<code>fetch</code> and
+      <code>fetch_hash</code>) or with the
+      <a href="#ODBC::Statement">ODBC::Statement</a> (<code>execute</code>)
+      as parameter.
+      <p>If the <a href="#ignorecase2"><code>ignorecase</code></a> option
+      is turned on, all column names used in the <code>column</code>,
+      <code>columns</code>, and <code>*_hash</code> methods are converted to
+      upper case.
+    </div>
+    <hr>
+    <div>
+      <h2><a name="ODBC::Column">ODBC::Column</a></h2>
+      <p>
+	The class to represent (read-only) information of a column of a query.
+	Objects of this class are created as result of the
+	<a href="#column"><code>column</code></a>
+	and <a href="#columns1"><code>columns</code></a> methods of
+	<a href="#ODBC::Statement">ODBC::Statement</a>.
+      </p>
+      <h3>super class:</h3>
+      <p>
+	<code><a href="#ODBC::Object">ODBC::Object</a></code>
+      </p>
+      <h3>methods:</h3>
+      <dl>
+	<dt><code>name</code></a>
+	<dd>Returns the column name (String).
+	<dt><code>table</code></a>
+	<dd>Returns the table name (String).
+	<dt><code>length</code></a>
+	<dd>Returns the length of the column (Integer).
+	<dt><code>nullable</code></a>
+	<dd>Returns the nullable state of the column (Boolean).
+	<dt><code>searchable</code></a>
+	<dd>Returns the searchable state of the column (Boolean).
+	<dt><code>unsigned</code></a>
+	<dd>Returns the unsigned flag of the column (Boolean).
+	<dt><code>precision</code></a>
+	<dd>Returns the precision of the column (Integer).
+	<dt><code>scale</code></a>
+	<dd>Returns the scale of the column (Integer).
+	<dt><code>type</code></a>
+	<dd>Returns the SQL type of the column (Integer).
+	<dt><code>autoincrement</code></a>
+	<dd>Returns true if the column automatically increments,
+	    false, if not, and nil if that information cannot be
+	    determined from the column.
+      </dl>
+    </div>
+    <hr>
+    <div>
+      <h2><a name="ODBC::Parameter">ODBC::Parameter</a></h2>
+      <p>
+	The class to represent (read-only) information of a parameter of a
+	query.
+	Objects of this class are created as result of the
+	<a href="#parameter"><code>parameter</code></a> and
+	<a href="#parameters"><code>parameters</code><a> methods of
+	<a href="#ODBC::Statement">ODBC::Statement</a>.
+      </p>
+      <h3>super class:</h3>
+      <p>
+	<code><a href="#ODBC::Object">ODBC::Object</a></code>
+      </p>
+      <h3>methods:</h3>
+      <dl>
+	<dt><code>type</code></a>
+	<dd>Returns the parameter's type, e.g. ODBC::SQL_CHAR.
+	<dt><code>precision</code></a>
+	<dd>Returns the parameter's precision (Integer).
+	<dt><code>length</code></a>
+	<dd>Returns the parameter's scale (Integer).
+	<dt><code>nullable</code></a>
+	<dd>Returns the nullable state of the column (Boolean).
+	<dt><code>iotype</code></a>
+	<dd>Returns the parameter's input/output type,
+	  e.g. ODBC::SQL_PARAM_INPUT.
+	<dt><code>output_type</code></a>
+	<dd>Returns the parameter's output type, only useful when the
+	  parameter is an output parameter (ODBC::SQL_PARAM_OUTPUT or
+	  ODBC::SQL_PARAM_INPUT_OUTPUT).
+	<dt><code>output_size</code></a>
+	<dd>Returns the parameter's output buffer size, only useful when the
+	  parameter is an output parameter (ODBC::SQL_PARAM_OUTPUT).
+      </dl>
+    </div>
+    <hr>
+    <div>
+      <h2><a name="ODBC::Date">ODBC::Date</a></h2>
+      <p>
+	The class to represent a <code>SQL_DATE</code> column in a table
+	or a <code>SQL_DATE</code> query parameter.
+      </p>
+      <h3>super class:</h3>
+      <p>
+	<code><a href="#ODBC::Object">ODBC::Object</a></code>
+      </p>
+      <h3>mixins:</h3>
+      <p>
+	<code>Comparable</code>
+      </p>
+      <h3>methods:</h3>
+      <dl>
+	<dt><a name="date.cmp"><code><=>(<var>adate</var>)</code></a>
+	<dd>Comparison, compares date with <var>adate</var> and returns
+	  0, 1, or -1.
+	<dt><a name="date.day"><code>day[=<var>num</var>]</code></a>
+        <dd>Returns or sets the day component of the date object.
+	<dt><a name="date.month"><code>month[=<var>num</var>]</code></a>
+        <dd>Returns or sets the month component of the date object.
+	<dt><a name="date.year"><code>year[=<var>num</var>]</code></a>
+        <dd>Returns or sets the year component of the date object.
+	<dt><a name="date.to_s"><code>to_s</code></a>
+        <dd>Returns a string representation of the object with format
+	  <code>YYYY-MM-DD</code>.
+	<dt><a name="date.clone"><code>clone</code></a>
+	<dd>Returns a fresh copy of the date object.
+      </dl>
+      <h3>singleton methods:</h3>
+      <dl>
+	<dt><a name="date.new"><code>new([<var>year</var>, <var>month</var>,
+	      <var>day</var>])</code></a>
+	<dt><code>new(<var>date</var>)</code>
+	<dt><code>new(<var>time</var>)</code>
+	<dt><code>new(<var>string</var>)</code>
+	<dd>Creates a new date object from numeric values or from
+	  a <code>Date</code>, <code>Time</code>, or <code>String</code>
+	  object. Recognized string formats are e.g.
+	  <pre>2001-01-01
+2001-01-01 12:00:01
+{ts '2001-01-01 12:00:01.1'}
+{d '2001-01-01'}</pre>
+      </dl>
+    </div>
+    <hr>
+    <div>
+      <h2><a name="ODBC::Time">ODBC::Time</a></h2>
+      <p>
+	The class to represent a <code>SQL_TIME</code> column in a table
+	or a <code>SQL_TIME</code> query parameter.
+      </p>
+      <h3>super class:</h3>
+      <p>
+	<code><a href="#ODBC::Object">ODBC::Object</a></code>
+      </p>
+      <h3>mixins:</h3>
+      <p>
+	<code>Comparable</code>
+      </p>
+      <h3>methods:</h3>
+      <dl>
+	<dt><a name="time.cmp"><code><=>(<var>atime</var>)</code></a>
+	<dd>Comparison, compares time with <var>atime</var> and returns
+	  0, 1, or -1.
+	<dt><a name="time.second"><code>second[=<var>num</var>]</code></a>
+        <dd>Returns or sets the second component of the time object.
+	<dt><a name="time.minute"><code>minute[=<var>num</var>]</code></a>
+        <dd>Returns or sets the minute component of the time object.
+	<dt><a name="time.hour"><code>hour[=<var>num</var>]</code></a>
+        <dd>Returns or sets the hour component of the time object.
+	<dt><a name="time.to_s"><code>to_s</code></a>
+        <dd>Returns a string representation of the object with format
+	  <code>hh:mm:ss</code>.
+	<dt><a name="time.clone"><code>clone</code></a>
+	<dd>Returns a fresh copy of the time object.
+      </dl>
+      <h3>singleton methods:</h3>
+      <dl>
+	<dt><a name="time.new"><code>new([<var>hour</var>, <var>minute</var>,
+	      <var>second</var>])</code></a>
+	<dt><code>new(<var>time</var>)</code>
+	<dt><code>new(<var>string</var>)</code>
+	<dd>Creates a new time object from numeric values or from
+	  a <code>Time</code> or <code>String</code> object.
+	  Recognized string formats are e.g.
+	  <pre>12:00:01
+2001-01-01 12:00:01
+{ts '2001-01-01 12:00:01.1'}
+{t '12:00:01'}</pre>
+      </dl>
+    </div>
+    <hr>
+    <div>
+      <h2><a name="ODBC::TimeStamp">ODBC::TimeStamp</a></h2>
+      <p>
+	The class to represent a <code>SQL_TIMESTAMP</code> column in a table
+	or a <code>SQL_TIMESTAMP</code> query parameter.
+      </p>
+      <h3>super class:</h3>
+      <p>
+	<code><a href="#ODBC::Object">ODBC::Object</a></code>
+      </p>
+      <h3>mixins:</h3>
+      <p>
+	<code>Comparable</code>
+      </p>
+      <h3>methods:</h3>
+      <dl>
+	<dt><a name="ts.cmp"><code><=>(<var>atimestamp</var>)</code></a>
+	<dd>Comparison, compares time stamp with <var>atimestamp</var>
+	  and returns 0, 1, or -1.
+	<dt><a name="ts.fraction"><code>fraction[=<var>num</var>]</code></a>
+        <dd>Returns or sets the fraction component of the time stamp object.
+	  Note that this is expressed in nanoseconds.
+	<dt><a name="ts.second"><code>second[=<var>num</var>]</code></a>
+        <dd>Returns or sets the second component of the time stamp object.
+	<dt><a name="ts.minute"><code>minute[=<var>num</var>]</code></a>
+        <dd>Returns or sets the minute component of the time stamp object.
+	<dt><a name="ts.hour"><code>hour[=<var>num</var>]</code></a>
+        <dd>Returns or sets the hour component of the time stamp object.
+	<dt><a name="ts.day"><code>day[=<var>num</var>]</code></a>
+        <dd>Returns or sets the day component of the time stamp object.
+	<dt><a name="ts.month"><code>month[=<var>num</var>]</code></a>
+        <dd>Returns or sets the month component of the time stamp object.
+	<dt><a name="ts.year"><code>year[=<var>num</var>]</code></a>
+        <dd>Returns or sets the year component of the time stamp object.
+	<dt><a name="ts.to_s"><code>to_s</code></a>
+        <dd>Returns a string representation of the object with format
+	  <code>YYYY-MM-DD hh:mm:ss fraction</code>.
+	<dt><a name="ts.clone"><code>clone</code></a>
+	<dd>Returns a fresh copy of the time stamp object.
+      </dl>
+      <h3>singleton methods:</h3>
+      <dl>
+	<dt><a name="ts.new"><code>new([<var>year</var>, <var>month</var>,
+	      <var>day</var>, <var>hour</var>, <var>minute</var>,
+	      <var>second</var>, <var>fraction</var>])</code></a>
+	<dt><code>new(<var>time</var>)</code>
+	<dt><code>new(<var>string</var>)</code>
+	<dd>Creates a new time stamp object from numeric values or from
+	  a <code>Time</code> or <code>String</code> object.
+	  Recognized string formats are e.g.
+	  <pre>12:00:01
+2001-01-01
+2001-01-01 12:00:01
+{ts '2001-01-01 12:00:01.1'}
+{d '2001-01-01'}
+{t '12:00:01'}</pre>
+      </dl>
+    </div>
+    <hr>
+    <div>
+      <h2><a name="ODBC::DSN">ODBC::DSN</a></h2>
+      <p>
+	The class to represent a data source name. Objects of this class are
+	created as result of a
+	<a href="#ODBC::datasources"><code>ODBC::datasources</code></a>
+	module function call.
+      </p>
+      <h3>super class:</h3>
+      <p>
+	<code><a href="#ODBC::Object">ODBC::Object</a></code>
+      </p>
+      <h3>methods:</h3>
+      <dl>
+	<dt><code>name[=<var>name</var>]</code></a>
+	<dd>Queries or sets the <var>name</var> (String) of the data source.
+	<dt><code>descr[=<var>descr</var>]</code></a>
+	<dd>Queries or sets the <var>descr</var> (description, String)
+	  of the data source.
+      </dl>
+      <h3>singleton methods:</h3>
+      <dl>
+	<dt><a name="ODBC::DSN.new"><code>new</code></a>
+	<dd>Returns an empty <a href="#ODBC::DSN">ODBC::DSN</a> object.
+      </dl>
+    </div>
+    <hr>
+    <div>
+      <h2><a name="ODBC::Driver">ODBC::Driver</a></h2>
+      <p>
+	The class to represent an ODBC driver with name and attributes.
+	Objects of this class are
+	created as result of a
+	<a href="#ODBC::drivers"><code>ODBC::drivers</code></a>
+	module function call.
+      </p>
+      <h3>super class:</h3>
+      <p>
+	<code><a href="#ODBC::Object">ODBC::Object</a></code>
+      </p>
+      <h3>methods:</h3>
+      <dl>
+	<dt><code>name[=<var>name</var>]</code></a>
+	<dd>Queries or sets the <var>name</var> (String) of the ODBC driver.
+	<dt><code>attrs[[<var>key</var>][=<var>value</var>]]</code></a>
+	<dd>Queries or sets attributes in the <var>attrs</var> Hash of the
+	  ODBC driver object. The <var>key</var>s and <var>value</var>s
+	  should be Strings.
+      </dl> 
+      <h3>singleton methods:</h3>
+      <dl>
+	<dt><a name="ODBC::Driver.new"><code>new</code></a>
+	<dd>Returns an empty <a href="#ODBC::Driver">ODBC::Driver</a> object.
+      </dl>
+    </div>
+    <div>
+      <hr>
+      <h2><a name="ODBCProc">ODBCProc</a></h2>
+      <p>
+	The class to represent a procedure with ODBC database/statement
+	context.
+	Objects of this class are created as result of a
+	<a href="#proc"><code>ODBC::Database.proc</code></a> method call.
+      </p>
+      <h3>super class:</h3>
+      <p>
+	<code>Proc</a></code>
+      </p>
+      <h3>methods:</h3>
+      <dl>
+	<dt><a name="call"><code>call([<var>args*</var>])</code></a>
+	<dd>Executes the SQL statement with parameters set from <var>args</var>
+	  and then invokes the procedure's block, setting the block's
+	  single parameter to the
+	   <a href="#ODBC::Statement">ODBC::Statement</a>.
+	<dt><code>[[<var>args*</var>]]</code>
+	<dd>Synonym for <code>call</code>.
+      </dl> 
+    </div>
+    <div>
+      <hr>
+      <h2><a name="ODBC::Error">ODBC::Error</a></h2>
+      <p>
+	The class to represent ODBC related exceptions. The descriptive
+	string is made up of the first ODBC driver or driver manager
+	message as concatenation of SQL state, native error, driver manager
+	name, database name/vendor, DSN, and error text, e.g. <pre>
+S1000 (1146) [unixODBC][TCX][MySQL]Table 'test.foo' doesn't exist</pre>
+	For internally generated errors, e.g. method invocation on
+	a broken connection, the descriptive string starts with
+	'INTERN' and native error 0, e.g. <pre>
+INTERN (0) [RubyODBC]No connection</pre>
+	For errors programmatically generated by the
+	<a href="#ODBC::Object.raise"><code>raise</code></a> method,
+	the descriptive string starts with 'INTERN' and native error 1,
+	e.g. <pre>
+INTERN (1) [RubyODBC]Programmer forgot to RTFM</pre>
+      </p>
+      <h3>super class:</h3>
+      <p>
+	<code>StandardError</a></code>
+      </p>
+    </div>
+    <div>
+      <hr>
+      <h2>Undocumented</h2>
+      <h3>Use The Source, Luke!</h3>
+      <p>
+	<code>ODBC::add_dsn(<var>driver</var>,<var>issys=false</var>)</code><br>
+	<code>ODBC::add_dsn(<var>name</var>,<var>attrs</var>,<var>issys=false</var>)</code><br>
+	<code>ODBC::config_dsn(<var>driver</var>,<var>issys=false</var>)</code><br>
+	<code>ODBC::config_dsn(<var>name</var>,<var>attrs</var>,<var>issys=false</var>)</code><br>
+	<code>ODBC::del_dsn(<var>driver</var>,<var>issys=false</var>)</code><br>
+	<code>ODBC::del_dsn(<var>name</var>,<var>attrs</var>,<var>issys=false</var>)</code><br>
+	<code>ODBC::write_file_dsn(<var>filename</var>,<var>appname</var>,<var>key</var>[,<var>value</var>])</code><br>
+	<code>ODBC::read_file_dsn(<var>filename</var>,<var>appname</var>,<var>key</var>)</code><br>
+	<code>ODBC::trace([<var>mask</var>])</code><br>
+	<br>
+	<code>ODBC::Statement.fetch!</code><br>
+	<code>ODBC::Statement.fetch_first!</code><br>
+	<code>ODBC::Statement.fetch_first_hash(<var>with_table_names=false</var>,<var>use_sym=false</var>)</code><br>
+	<code>ODBC::Statement.fetch_scroll!(<var>direction</var>,<var>offset=1</var>)</code><br>
+	<code>ODBC::Statement.fetch_hash!(<var>with_table_names=false</var>,<var>use_sym=false</var>)</code><br>
+      </p>
+    <hr>
+    <address>
+      mailto:<a href="mailto:chw@ch-werner.de">Christian Werner</a>
+    </address>
+  </body>
+</html>

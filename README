@@ -1,0 +1,110 @@
+# $Id: README,v 1.41 2011/01/15 08:03:22 chw Exp chw $
+
+ruby-odbc-0.99994
+
+This is an ODBC binding for Ruby. So far it has been tested with
+
+    - Ruby 1.[6-9], MySQL 3.22/MyODBC (local), unixODBC 2.1.0
+      on Linux 2.2-x86 and 2.6-x86_64
+
+    - Ruby 1.6.4, MySQL 3.22/MyODBC (local), libiodbc 2.50
+      on Linux 2.2-x86
+
+    - Ruby 1.[6-8], MySQL 3.22/MyODBC (remote), MS Jet Engine, MSVC++ 6.0
+      on Windows NT4SP6
+
+    - Ruby 1.6.[3-5], MySQL 3.22/MyODBC (remote), MS Jet Engine, cygwin,
+      on Windows NT4SP6 and 2000
+
+    - Ruby 1.8.*, SQLite/ODBC >= 0.67, libiodbc 3.52.4 on Fedora Core 3 x86
+
+    Michael Neumann <neumann@s-direktnet.de> and
+    Will Merrell <wmerrell@catalystcorp.com> reported successful compilation
+    with Cygwin on Win32.
+
+Requirements:
+
+    - Ruby 1.6.[3-8] or Ruby >= 1.7
+    - unixODBC 2.x or libiodbc 3.52 on UN*X 
+
+Installation:
+
+    $ ruby -Cext extconf.rb [--enable-dlopen|--disable-dlopen]
+    $ make -C ext
+    # make -C ext install
+
+    --enable/disble-dlopen turns on/off special initialization
+    code to make ruby-odbc agnostic to unixODBC/iODBC driver
+    manager shared library names when GCC is used for compile.
+    In cases where unixODBC or iODBC is installed in non-standard
+    locations, use the option --with-odbc-dir=<non-standard-location>
+    when running extconf.rb
+
+Installation of utf8 version:
+
+    $ ruby -Cext/utf8 extconf.rb [--enable-dlopen|--disable-dlopen]
+    $ make -C ext/utf8
+    # make -C ext/utf8 install
+
+Installation MSVC:
+
+    C:..>ruby -Cext extconf.rb
+    C:..>cd ext
+    C:..>nmake
+    C:..>nmake install
+    C:..>ruby -Cutf8 extconf.rb
+    C:..>cd utf8
+    C:..>nmake
+    C:..>nmake install
+
+Testing:
+
+    $ ruby -Ctest test.rb DSN [uid] [pwd]
+ or
+    $ ruby -KU -Ctest/utf8 test.rb DSN [uid] [pwd]
+
+Usage:
+
+    Refer to doc/odbc.html
+
+    The difference between utf8 and non-utf8 versions are:
+
+      - non-utf8 version uses normal SQL.* ANSI functions
+      - utf8 version uses SQL.*W UNICODE functions and
+        requires/returns all strings in UTF8 format
+
+    Thus, depending on the -K option of ruby one could use
+    that code snippet:
+
+      ...
+      if $KCODE == "UTF8" then
+        require 'odbc_utf8'
+      else
+        require 'odbc'
+      fi
+
+    It is also possible to load both non-utf8 and utf8 version
+    into ruby:
+
+      ...
+      # non-utf8 version
+      require 'odbc'
+      # utf8 version
+      require 'odbc_utf8'
+
+    Whichever is loaded first, gets the module name 'ODBC'.
+    The second loaded module will be named 'ODBC_UTF8' (for
+    'odbc_utf8') or 'ODBC_NONE' (for 'odbc'). That should
+    allow to use both versions simultaneously in special
+    situations.
+
+TODO:
+
+    - heavier testing
+    - improve documentation
+
+Author:
+
+    Christian Werner
+    mailto:chw@ch-werner.de
+    http://www.ch-werner.de/rubyodbc
