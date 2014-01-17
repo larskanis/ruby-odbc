@@ -20,6 +20,8 @@ This is an ODBC binding for Ruby. So far it has been tested with
 
     - Ruby 1.8.*, SQLite/ODBC >= 0.67, libiodbc 3.52.4 on Fedora Core 3 x86
 
+    - Ruby 2.0.0, SQLite/ODBC >= 0.93, unixODBC 2.2.14 on Ubuntu 12.04 x86
+
     Michael Neumann <neumann@s-direktnet.de> and
     Will Merrell <wmerrell@catalystcorp.com> reported successful compilation
     with Cygwin on Win32.
