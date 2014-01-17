@@ -145,6 +145,56 @@ static SQLRETURN tracesql(SQLHENV henv, SQLHDBC hdbc, SQLHSTMT hstmt,
 #define SQL_NO_DATA SQL_NO_DATA_FOUND
 #endif
 
+////////////////////////////////////////////////////////////////
+
+/* emulate rb_thread_call_without_gvl with rb_thread_blocking_region */
+#define rb_thread_call_without_gvl(func, data1, ubf, data2) \
+  rb_thread_blocking_region((rb_blocking_function_t *)func, data1, ubf, data2)
+
+typedef struct _SQLExecDirect_Args {
+  SQLHSTMT    StatementHandle;
+#ifdef _UNICODE
+  SQLWCHAR    *StatementText;
+#else
+  SQLCHAR    *StatementText;
+#endif
+  SQLINTEGER  TextLength;
+} SQLExecDirect_Args;
+
+typedef struct _SQLExecute_Args {
+  SQLHSTMT    StatementHandle;
+} SQLExecute_Args;
+
+VALUE
+SQLExecute_wrapper(void *data)
+{
+	SQLExecute_Args *args = (SQLExecute_Args *)data;
+  return SQLExecute(args->StatementHandle);
+}
+
+void
+SQLExecute_unblock(void *data)
+{
+	SQLExecute_Args *args = (SQLExecute_Args *)data;
+	SQLCancel(args->StatementHandle);
+}
+
+VALUE
+SQLExecDirect_wrapper(void *data)
+{
+	SQLExecDirect_Args *args = (SQLExecDirect_Args *)data;
+  return SQLExecDirect(args->StatementHandle, args->StatementText, args->TextLength);
+}
+
+void
+SQLExecDirect_unblock(void *data)
+{
+	SQLExecDirect_Args *args = (SQLExecDirect_Args *)data;
+	SQLCancel(args->StatementHandle);
+}
+   
+////////////////////////////////////////////////////////////////
+
 typedef struct link {
     struct link *succ;
     struct link *pred;
@@ -163,7 +213,7 @@ typedef struct dbc {
     VALUE self;
     VALUE env;
     struct env *envp;
-    LINK stmts;
+    LINK stmts; 
     SQLHDBC hdbc;
     VALUE rbtime;
     VALUE gmtime;
@@ -390,7 +440,7 @@ uc_strchr(SQLWCHAR *str, SQLWCHAR c)
 
 static int
 mkutf(char *dest, SQLWCHAR *src, int len)
-{
+{      
     int i;
     char *cp = dest;
 
@@ -745,7 +795,7 @@ list_first(LINK *head)
 static int
 list_empty(LINK *head)
 {
-    return head->succ == NULL;
+    return head->succ == NULL; 
 }
 
 static void
@@ -4385,8 +4435,8 @@ do_option(int argc, VALUE *argv, VALUE self, int isstmt, int op)
 	if (val == Qnil) {
 	    return v ? Qtrue : Qfalse;
 	}
-	v = (TYPE(val) == T_FIXNUM) ?
-	    (FIX2INT(val) ? SQL_AUTOCOMMIT_ON : SQL_AUTOCOMMIT_OFF) :
+	v = (TYPE(val) == T_FIXNUM) ?  
+	    (FIX2INT(val) ? SQL_AUTOCOMMIT_ON : SQL_AUTOCOMMIT_OFF) : 
 	    (RTEST(val) ? SQL_AUTOCOMMIT_ON : SQL_AUTOCOMMIT_OFF);
 	break;
 
@@ -4394,8 +4444,8 @@ do_option(int argc, VALUE *argv, VALUE self, int isstmt, int op)
 	if (val == Qnil) {
 	    return v ? Qtrue : Qfalse;
 	}
-	v = (TYPE(val) == T_FIXNUM) ?
-	    (FIX2INT(val) ? SQL_NOSCAN_ON : SQL_NOSCAN_OFF) :
+	v = (TYPE(val) == T_FIXNUM) ?  
+	    (FIX2INT(val) ? SQL_NOSCAN_ON : SQL_NOSCAN_OFF) : 
 	    (RTEST(val) ? SQL_NOSCAN_ON : SQL_NOSCAN_OFF);
 	break;
 
@@ -4424,7 +4474,7 @@ do_option(int argc, VALUE *argv, VALUE self, int isstmt, int op)
 	    rb_raise(Cerror, "%s", msg);
 	}
     } else {
-	if (!succeeded(SQL_NULL_HENV, SQL_NULL_HDBC, q->hstmt,
+	if (!succeeded(SQL_NULL_HENV, SQL_NULL_HDBC, q->hstmt, 
 		       SQLSetStmtOption(q->hstmt, (SQLUSMALLINT) op,
 					(SQLUINTEGER) v),
 		       &msg, "SQLSetStmtOption(%d)", op)) {
@@ -4573,7 +4623,7 @@ scan_dtts(VALUE str, int do_d, int do_t, TIMESTAMP_STRUCT *ts)
 	ts->day = dd;
 	return 1;
     }
-    if (do_t &&
+    if (do_t && 
 	(sscanf(cstr, "{t '%d:%d:%d' %c", &hh, &mmm, &ss, &c) == 4) &&
 	(c == '}')) {
 	ts->hour = yy;
@@ -4638,7 +4688,7 @@ date_new(int argc, VALUE *argv, VALUE self)
 {
     DATE_STRUCT *date;
     VALUE obj = Data_Make_Struct(self, DATE_STRUCT, 0, xfree, date);
-
+    
     rb_obj_call_init(obj, argc, argv);
     return obj;
 }
@@ -4873,7 +4923,7 @@ time_new(int argc, VALUE *argv, VALUE self)
 {
     TIME_STRUCT *time;
     VALUE obj = Data_Make_Struct(self, TIME_STRUCT, 0, xfree, time);
-
+    
     rb_obj_call_init(obj, argc, argv);
     return obj;
 }
@@ -4887,7 +4937,7 @@ time_load1(VALUE self, VALUE str, int load)
     if (scan_dtts(str, 0, 1, &tss)) {
 	TIME_STRUCT *time;
 	VALUE obj;
-
+       
 	if (load) {
 	    obj = Data_Make_Struct(self, TIME_STRUCT, 0, xfree, time);
 	} else {
@@ -5481,7 +5531,7 @@ check_ncols(STMT *q)
 	(q->coltypes == NULL)) {
 	COLTYPE *coltypes = NULL;
 	SQLSMALLINT cols = 0;
-
+	
 	if (succeeded(SQL_NULL_HENV, SQL_NULL_HDBC, q->hstmt,
 		      SQLNumResultCols(q->hstmt, &cols), NULL,
 		      "SQLNumResultCols")
@@ -7005,10 +7055,14 @@ stmt_prep_int(int argc, VALUE *argv, VALUE self, int mode)
 #endif
     if ((mode & MAKERES_EXECD)) {
 	SQLRETURN ret;
+    SQLExecDirect_Args args;
 
-	if (!succeeded_nodata(SQL_NULL_HENV, SQL_NULL_HDBC, hstmt,
-			      (ret = SQLExecDirect(hstmt, ssql, SQL_NTS)),
-			      &msg, "SQLExecDirect('%s')", csql)) {
+    args.StatementHandle = hstmt;
+    args.StatementText = ssql;
+    args.TextLength = SQL_NTS;
+    ret = (SQLRETURN)rb_thread_call_without_gvl(SQLExecDirect_wrapper, &args, SQLExecDirect_unblock, &args);
+
+	if (!succeeded_nodata(SQL_NULL_HENV, SQL_NULL_HDBC, hstmt, ret, &msg, "SQLExecDirect('%s')", csql)) {
 	    goto sqlerr;
 	}
 	if (ret == SQL_NO_DATA) {
@@ -7422,6 +7476,7 @@ stmt_exec_int(int argc, VALUE *argv, VALUE self, int mode)
     int i, argnum, has_out_parms = 0;
     char *msg = NULL;
     SQLRETURN ret;
+    SQLExecute_Args args;
 
     Data_Get_Struct(self, STMT, q);
     if (argc > q->nump - ((EXEC_PARMXOUT(mode) < 0) ? 0 : 1)) {
@@ -7452,9 +7507,11 @@ stmt_exec_int(int argc, VALUE *argv, VALUE self, int mode)
 	    goto error;
 	}
     }
-    if (!succeeded_nodata(SQL_NULL_HENV, SQL_NULL_HDBC, q->hstmt,
-			  (ret = SQLExecute(q->hstmt)),
-			  &msg, "SQLExecute")) {
+
+    args.StatementHandle = q->hstmt;
+    ret = (SQLRETURN)rb_thread_call_without_gvl(SQLExecute_wrapper, &args, SQLExecute_unblock, &args);
+    
+    if (!succeeded_nodata(SQL_NULL_HENV, SQL_NULL_HDBC, q->hstmt, ret, &msg, "SQLExecute")) {
 error:
 #ifdef UNICODE
 	for (i = 0; i < q->nump; i++) {
@@ -7512,7 +7569,7 @@ static VALUE
 stmt_do(int argc, VALUE *argv, VALUE self)
 {
     VALUE stmt;
-
+    
     if (argc < 1) {
 	rb_raise(rb_eArgError, "wrong # of arguments");
     }
@@ -8128,7 +8185,7 @@ Init_odbc()
     rb_cDate = rb_eval_string("Date");
 
     if (rb_const_defined(rb_cObject, modid)) {
-	v = rb_const_get(rb_cObject, modid);
+	v = rb_const_get(rb_cObject, modid); 
 	if (TYPE(v) != T_MODULE) {
 	    rb_raise(rb_eTypeError, "%s already defined", modname);
 	}

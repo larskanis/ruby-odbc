@@ -1,6 +1,20 @@
 ODBC binding for Ruby
 ---------------------
 
+Wed Jan 16 2014 version 0.99996 released
+
+	* Added call to rb_thread_blocking_region to release the global 
+          interpreter lock during SQLExecute and SQLExecDirect and require it 
+          afterwards.
+
+          This improves performance by not blocking all Ruby threads during long 
+          running queries. This also fixes a deadlock which can occur in SQLExecute and
+          SQLExecDirect which can happen when trying to read (if isolation level is 
+          "read committed", "repeatable read", "serializable", etc.) or when trying to 
+          modify a dirty row that has been modified by an uncommitted transaction. If this
+          transaction was initiated by a ruby thread in the same process, all ruby threads 
+          will hang and the ruby process will become unresponsive.
+
 Wed Mar 13 2013 version 0.99995 released
 
 	* added ODBC::Database.use_sql_column_name= flag to switch
