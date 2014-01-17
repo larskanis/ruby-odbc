@@ -1,6 +1,6 @@
 /*
  * ODBC-Ruby binding
- * Copyright (c) 2001-2011 Christian Werner <chw@ch-werner.de>
+ * Copyright (c) 2001-2013 Christian Werner <chw@ch-werner.de>
  * Portions copyright (c) 2004 Ryszard Niewisiewicz <micz@fibernet.pl>
  * Portions copyright (c) 2006 Carl Blakeley <cblakeley@openlinksw.co.uk>
  *
@@ -8,7 +8,7 @@
  * and redistribution of this file and for a
  * DISCLAIMER OF ALL WARRANTIES.
  *
- * $Id: odbc.c,v 1.72 2011/01/15 08:02:55 chw Exp chw $
+ * $Id: odbc.c,v 1.75 2013/03/13 19:31:13 chw Exp chw $
  */
 
 #undef ODBCVER
@@ -39,8 +39,6 @@
 #ifdef UNICODE
 #include <sqlucode.h>
 #endif
-
-static const char *VERSION = "0.99994";
 
 #ifndef HAVE_TYPE_SQLTCHAR
 #ifdef UNICODE
@@ -170,6 +168,7 @@ typedef struct dbc {
     VALUE rbtime;
     VALUE gmtime;
     int upc;
+    VALUE use_sql_column_name;
 } DBC;
 
 typedef struct {
@@ -352,7 +351,7 @@ static const char *colnamebuf[] = {
 #define LEN_ALIGN(x) \
     ((x) + sizeof (double) - (((x) + sizeof (double)) % sizeof (double)))
 
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -626,7 +625,7 @@ uc_free(SQLWCHAR *str)
 
 #endif
 
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -653,7 +652,7 @@ dsn_init(VALUE self)
     rb_iv_set(self, "@descr", Qnil);
     return self;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -680,7 +679,7 @@ drv_init(VALUE self)
     rb_iv_set(self, "@attrs", rb_hash_new());
     return self;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -929,7 +928,7 @@ mark_stmt(STMT *q)
 	rb_gc_mark(q->dbc);
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -952,7 +951,7 @@ set_err(const char *msg, int warn)
     CVAR_SET(Cobj, warn ? IDatatinfo : IDataterror, a);
     return STR2CSTR(v);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1283,7 +1282,7 @@ succeeded_nodata(SQLHENV henv, SQLHDBC hdbc, SQLHSTMT hstmt, SQLRETURN ret,
     }
     return succeeded_common(henv, hdbc, hstmt, ret, msgp);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1324,7 +1323,7 @@ get_env(VALUE self)
     Data_Get_Struct(env_of(self), ENV, e);
     return e;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1350,7 +1349,7 @@ get_dbc(VALUE self)
     Data_Get_Struct(self, DBC, p);
     return p;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1381,7 +1380,7 @@ dbc_raise(VALUE self, VALUE msg)
     rb_raise(Cerror, "%s", buf);
     return Qnil;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1419,7 +1418,7 @@ env_new(VALUE self)
 #endif
     return obj;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1474,7 +1473,7 @@ dbc_dsns(VALUE self)
     }
     return aret;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1550,7 +1549,7 @@ dbc_drivers(VALUE self)
     }
     return aret;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1869,7 +1868,7 @@ dbc_rfdsn(int argc, VALUE *argv, VALUE self)
     return Qnil;
 #endif
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1897,7 +1896,7 @@ dbc_clrerror(VALUE self)
     CVAR_SET(Cobj, IDatatinfo, Qnil);
     return Qnil;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1956,6 +1955,7 @@ dbc_new(int argc, VALUE *argv, VALUE self)
     list_init(&p->stmts, offsetof(STMT, link));
     p->hdbc = SQL_NULL_HDBC;
     p->upc = 0;
+    p->use_sql_column_name = Qfalse;
 #endif
     if (env != Qnil) {
 	ENV *e;
@@ -1968,7 +1968,7 @@ dbc_new(int argc, VALUE *argv, VALUE self)
     }
     return obj;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -2197,6 +2197,20 @@ dbc_timeutc(int argc, VALUE *argv, VALUE self)
     return p->gmtime;
 }
 
+static VALUE
+dbc_use_scn(int argc, VALUE *argv, VALUE self)
+{
+    DBC *p = get_dbc(self);
+    VALUE val;
+
+    if (argc > 0) {
+	rb_scan_args(argc, argv, "1", &val);
+	p->use_sql_column_name =
+	    (val != Qnil && val != Qfalse) ? Qtrue : Qfalse;
+    }
+    return p->use_sql_column_name;
+}
+
 /*
  *----------------------------------------------------------------------
  *
@@ -2220,7 +2234,7 @@ dbc_dropall(VALUE self)
     }
     return self;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -2257,7 +2271,7 @@ dbc_disconnect(int argc, VALUE *argv, VALUE self)
     }
     return Qfalse;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -3171,7 +3185,7 @@ dbc_getinfo(int argc, VALUE *argv, VALUE self)
     }
     return Qnil;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -3185,7 +3199,7 @@ make_coltypes(SQLHSTMT hstmt, int ncols, char **msgp)
 {
     int i;
     COLTYPE *ret = NULL;
-    SQLLEN type, size;
+    SQLLEN type, size = 0;
 
     for (i = 0; i < ncols; i++) {
 	SQLUSMALLINT ic = i + 1;
@@ -3322,7 +3336,7 @@ make_coltypes(SQLHSTMT hstmt, int ncols, char **msgp)
     }
     return ret;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -3402,7 +3416,7 @@ retain_paraminfo_override(STMT *q, int nump, PARAMINFO *paraminfo)
 	}
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -3447,7 +3461,7 @@ wrap_stmt(VALUE dbc, DBC *p, SQLHSTMT hstmt, STMT **qp)
     }
     return stmt;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -3557,7 +3571,7 @@ upcase_if(char *string, int upc)
     }
     return string;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -3567,7 +3581,7 @@ upcase_if(char *string, int upc)
  */
 
 static VALUE
-make_column(SQLHSTMT hstmt, int i, int upc)
+make_column(SQLHSTMT hstmt, int i, int upc, int use_scn)
 {
     VALUE obj, v;
     SQLUSMALLINT ic = i + 1;
@@ -3582,10 +3596,12 @@ make_column(SQLHSTMT hstmt, int i, int upc)
 
     name[0] = 0;
     if (!succeeded(SQL_NULL_HENV, SQL_NULL_HDBC, hstmt,
-		   SQLColAttributes(hstmt, ic, SQL_COLUMN_LABEL, name,
+		   SQLColAttributes(hstmt, ic, use_scn ? SQL_COLUMN_NAME :
+				    SQL_COLUMN_LABEL, name,
 				    (SQLSMALLINT) sizeof (name),
 				    &name_len, NULL),
-		   &msg, "SQLColAttributes(SQL_COLUMN_LABEL)")) {
+		   &msg, use_scn ? "SQLColAttributes(SQL_COLUMN_NAME)" :
+		   "SQLColAttributes(SQL_COLUMN_LABEL)")) {
 	rb_raise(Cerror, "%s", msg);
     }
     obj = rb_obj_alloc(Ccolumn);
@@ -3727,7 +3743,7 @@ make_column(SQLHSTMT hstmt, int i, int upc)
     rb_iv_set(obj, "@autoincrement", v);
     return obj;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -3767,7 +3783,7 @@ make_param(STMT *q, int i)
     rb_iv_set(obj, "@output_type", INT2NUM(v));
     return obj;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -4051,7 +4067,7 @@ dbc_speccols(int argc, VALUE *argv, VALUE self)
 {
     return dbc_info(argc, argv, self, INFO_SPECCOLS);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -4146,7 +4162,7 @@ dbc_transaction(VALUE self)
 			     rb_funcall(ret, IDto_s, 0, 0)));
     return Qnil;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -4227,7 +4243,7 @@ env_odbcver(int argc, VALUE *argv, VALUE self)
     rb_raise(Cerror, "%s", set_err("Unsupported in ODBC < 3.0", 0));
 #endif
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -4519,7 +4535,7 @@ stmt_getsetoption(int argc, VALUE *argv, VALUE self)
 {
     return do_option(argc, argv, self, 1, -1);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -4597,7 +4613,7 @@ next:
     }
     return 0;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -4832,7 +4848,7 @@ date_cmp(VALUE self, VALUE date)
     }
     return INT2FIX(1);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -5060,7 +5076,7 @@ time_cmp(VALUE self, VALUE time)
     }
     return INT2FIX(1);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -5403,7 +5419,7 @@ timestamp_cmp(VALUE self, VALUE timestamp)
     }
     return INT2FIX(1);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -5825,27 +5841,34 @@ stmt_column(int argc, VALUE *argv, VALUE self)
 {
     STMT *q;
     VALUE col;
+    int use_scn = 0;
 
     rb_scan_args(argc, argv, "1", &col);
     Check_Type(col, T_FIXNUM);
     Data_Get_Struct(self, STMT, q);
     check_ncols(q);
-    return make_column(q->hstmt, FIX2INT(col), q->upc);
+    if (q->dbcp != NULL && q->dbcp->use_sql_column_name == Qtrue) {
+	use_scn = 1;
+    }
+    return make_column(q->hstmt, FIX2INT(col), q->upc, use_scn);
 }
 
 static VALUE
 stmt_columns(int argc, VALUE *argv, VALUE self)
 {
     STMT *q;
-    int i;
+    int i, use_scn = 0;
     VALUE res, as_ary = Qfalse;
 
     rb_scan_args(argc, argv, "01", &as_ary);
     Data_Get_Struct(self, STMT, q);
     check_ncols(q);
+    if (q->dbcp != NULL && q->dbcp->use_sql_column_name == Qtrue) {
+	use_scn = 1;
+    }
     if (rb_block_given_p()) {
 	for (i = 0; i < q->ncols; i++) {
-	    rb_yield(make_column(q->hstmt, i, q->upc));
+	    rb_yield(make_column(q->hstmt, i, q->upc, use_scn));
 	}
 	return self;
     }
@@ -5857,7 +5880,7 @@ stmt_columns(int argc, VALUE *argv, VALUE self)
     for (i = 0; i < q->ncols; i++) {
 	VALUE obj;
 
-	obj = make_column(q->hstmt, i, q->upc);
+	obj = make_column(q->hstmt, i, q->upc, use_scn);
 	if (RTEST(as_ary)) {
 	    rb_ary_store(res, i, obj);
 	} else {
@@ -5920,7 +5943,7 @@ stmt_params(VALUE self)
 static VALUE
 do_fetch(STMT *q, int mode)
 {
-    int i, offc;
+    int i, use_scn = 0, offc;
     char **bufs, *msg;
     VALUE res;
 
@@ -5960,6 +5983,9 @@ do_fetch(STMT *q, int mode)
 	    }
 	}
     }
+    if (q->dbcp != NULL && q->dbcp->use_sql_column_name == Qtrue) {
+	use_scn = 1;
+    } 
     switch (mode & DOFETCH_MODES) {
     case DOFETCH_HASH:
     case DOFETCH_HASH2:
@@ -6010,10 +6036,13 @@ do_fetch(STMT *q, int mode)
 		if (!succeeded(SQL_NULL_HENV, SQL_NULL_HDBC, q->hstmt,
 			       SQLColAttributes(q->hstmt,
 						(SQLUSMALLINT) (i + 1),
+						use_scn ? SQL_COLUMN_NAME :
 						SQL_COLUMN_LABEL, name,
 						sizeof (name),
 						&name_len, NULL),
-			       &msg, "SQLColAttributes(SQL_COLUMN_LABEL)")) {
+			       &msg, use_scn ?
+			       "SQLColAttributes(SQL_COLUMN_NAME)" :
+			       "SQLColAttributes(SQL_COLUMN_LABEL)")) {
 		    rb_raise(Cerror, "%s", msg);
 		}
 		if (name_len >= (SQLSMALLINT) sizeof (name)) {
@@ -6066,8 +6095,10 @@ do_fetch(STMT *q, int mode)
 		name[0] = 0;
 		callsql(SQL_NULL_HENV, SQL_NULL_HDBC, q->hstmt,
 			SQLColAttributes(q->hstmt, (SQLUSMALLINT) (i + 1),
+					 use_scn ? SQL_COLUMN_NAME :
 					 SQL_COLUMN_LABEL, name,
 					 sizeof (name), &name_len, NULL),
+			use_scn ? "SQLColAttributes(SQL_COLUMN_NAME)" :
 			"SQLColAttributes(SQL_COLUMN_LABEL)");
 		if (name_len >= (SQLSMALLINT) sizeof (name)) {
 		    name_len = sizeof (name) - 1;
@@ -7522,7 +7553,7 @@ stmt_ignorecase(int argc, VALUE *argv, VALUE self)
     }
     return *flag ? Qtrue : Qfalse;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -7545,7 +7576,7 @@ stmt_new(VALUE self)
     }
     return wrap_stmt(self, p, hstmt, NULL);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -7636,7 +7667,7 @@ stmt_procwrap(int argc, VALUE *argv, VALUE self)
     }
     return rb_funcall(Cproc, IDnew, 2, arg0, arg1);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -7819,7 +7850,7 @@ mod_trace(int argc, VALUE *argv, VALUE self)
     return INT2NUM(0);
 #endif
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -8072,7 +8103,7 @@ static struct {
     { &IDlocal, "local" },
     { &IDto_s, "to_s" }
 };
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -8083,9 +8114,9 @@ static struct {
 
 void
 #ifdef UNICODE
-Init_odbc_utf8_ext()
+Init_odbc_utf8()
 #else
-Init_odbc_ext()
+Init_odbc()
 #endif
 {
     int i;
@@ -8115,10 +8146,6 @@ Init_odbc_ext()
     }
 
     Modbc = rb_define_module(modname);
-
-    /* Library version */
-    rb_define_const(Modbc, "VERSION", rb_str_new2(VERSION) );
-
     Cobj = rb_define_class_under(Modbc, "Object", rb_cObject);
     rb_define_class_variable(Cobj, "@@error", Qnil);
     rb_define_class_variable(Cobj, "@@info", Qnil);
@@ -8253,6 +8280,8 @@ Init_odbc_ext()
     rb_define_method(Cdbc, "use_time=", dbc_timefmt, -1);
     rb_define_method(Cdbc, "use_utc", dbc_timeutc, -1);
     rb_define_method(Cdbc, "use_utc=", dbc_timeutc, -1);
+    rb_define_method(Cdbc, "use_sql_column_name", dbc_use_scn, -1);
+    rb_define_method(Cdbc, "use_sql_column_name=", dbc_use_scn, -1);
 
     /* connection options */
     rb_define_method(Cdbc, "get_option", dbc_getsetoption, -1);
