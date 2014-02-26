@@ -9,9 +9,10 @@ This version releases the global interpreter lock during SQLExecute & SQLExecDir
 It also forces the encoding of all ruby result strings to UTF-8 if Encoding.default_external is 'UTF-8'.
 
 For example:
-> Encoding.default_external = 'UTF-8'
-> row = # some database query
-> puts row[:some_string_column].encoding  # UTF-8
+ > Encoding.default_external = 'UTF-8'
+ > row = # some database query
+ > puts row[:some_string_column].encoding  # UTF-8
+
 
 Ensure you are saving UTF-8 encoded (or compatible) strings into the database.
 
