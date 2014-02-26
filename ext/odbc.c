@@ -99,14 +99,16 @@ BOOL INSTAPI SQLReadFileDSNW(LPWSTR, LPWSTR, LPWSTR, LPWSTR, WORD, WORD *);
 BOOL INSTAPI SQLWriteFileDSNW(LPWSTR, LPWSTR, LPWSTR, LPWSTR);
 #endif
 
+#endif /* UNICODE */
+
 #if defined(HAVE_RUBY_ENCODING_H) && HAVE_RUBY_ENCODING_H
 #define USE_RB_ENC 1
 #include "ruby/encoding.h"
 static rb_encoding *rb_enc = NULL;
+static rb_encoding *rb_external_encoding = NULL;
+static int rb_encoding_is_utf8 = 0;
 static VALUE rb_encv = Qnil;
 #endif
-
-#endif /* UNICODE */
 
 #ifndef HAVE_RB_DEFINE_ALLOC_FUNC
 #define rb_define_alloc_func(cls, func) \
@@ -192,7 +194,7 @@ SQLExecDirect_unblock(void *data)
 	SQLExecDirect_Args *args = (SQLExecDirect_Args *)data;
 	SQLCancel(args->StatementHandle);
 }
-   
+
 ////////////////////////////////////////////////////////////////
 
 typedef struct link {
@@ -213,7 +215,7 @@ typedef struct dbc {
     VALUE self;
     VALUE env;
     struct env *envp;
-    LINK stmts; 
+    LINK stmts;
     SQLHDBC hdbc;
     VALUE rbtime;
     VALUE gmtime;
@@ -440,7 +442,7 @@ uc_strchr(SQLWCHAR *str, SQLWCHAR c)
 
 static int
 mkutf(char *dest, SQLWCHAR *src, int len)
-{      
+{
     int i;
     char *cp = dest;
 
@@ -675,6 +677,22 @@ uc_free(SQLWCHAR *str)
 
 #endif
 
+static VALUE
+utf8_tainted_str_new(SQLCHAR *str, int len)
+{
+    VALUE v;
+
+    v = rb_tainted_str_new(str, len);
+
+#ifdef USE_RB_ENC
+    if(rb_encoding_is_utf8)
+    {
+       rb_enc_associate(v, rb_enc);
+    }
+#endif
+
+    return v;
+}
 
 /*
  *----------------------------------------------------------------------
@@ -795,7 +813,7 @@ list_first(LINK *head)
 static int
 list_empty(LINK *head)
 {
-    return head->succ == NULL; 
+    return head->succ == NULL;
 }
 
 static void
@@ -4435,8 +4453,8 @@ do_option(int argc, VALUE *argv, VALUE self, int isstmt, int op)
 	if (val == Qnil) {
 	    return v ? Qtrue : Qfalse;
 	}
-	v = (TYPE(val) == T_FIXNUM) ?  
-	    (FIX2INT(val) ? SQL_AUTOCOMMIT_ON : SQL_AUTOCOMMIT_OFF) : 
+	v = (TYPE(val) == T_FIXNUM) ?
+	    (FIX2INT(val) ? SQL_AUTOCOMMIT_ON : SQL_AUTOCOMMIT_OFF) :
 	    (RTEST(val) ? SQL_AUTOCOMMIT_ON : SQL_AUTOCOMMIT_OFF);
 	break;
 
@@ -4444,8 +4462,8 @@ do_option(int argc, VALUE *argv, VALUE self, int isstmt, int op)
 	if (val == Qnil) {
 	    return v ? Qtrue : Qfalse;
 	}
-	v = (TYPE(val) == T_FIXNUM) ?  
-	    (FIX2INT(val) ? SQL_NOSCAN_ON : SQL_NOSCAN_OFF) : 
+	v = (TYPE(val) == T_FIXNUM) ?
+	    (FIX2INT(val) ? SQL_NOSCAN_ON : SQL_NOSCAN_OFF) :
 	    (RTEST(val) ? SQL_NOSCAN_ON : SQL_NOSCAN_OFF);
 	break;
 
@@ -4474,7 +4492,7 @@ do_option(int argc, VALUE *argv, VALUE self, int isstmt, int op)
 	    rb_raise(Cerror, "%s", msg);
 	}
     } else {
-	if (!succeeded(SQL_NULL_HENV, SQL_NULL_HDBC, q->hstmt, 
+	if (!succeeded(SQL_NULL_HENV, SQL_NULL_HDBC, q->hstmt,
 		       SQLSetStmtOption(q->hstmt, (SQLUSMALLINT) op,
 					(SQLUINTEGER) v),
 		       &msg, "SQLSetStmtOption(%d)", op)) {
@@ -4623,7 +4641,7 @@ scan_dtts(VALUE str, int do_d, int do_t, TIMESTAMP_STRUCT *ts)
 	ts->day = dd;
 	return 1;
     }
-    if (do_t && 
+    if (do_t &&
 	(sscanf(cstr, "{t '%d:%d:%d' %c", &hh, &mmm, &ss, &c) == 4) &&
 	(c == '}')) {
 	ts->hour = yy;
@@ -4688,7 +4706,7 @@ date_new(int argc, VALUE *argv, VALUE self)
 {
     DATE_STRUCT *date;
     VALUE obj = Data_Make_Struct(self, DATE_STRUCT, 0, xfree, date);
-    
+
     rb_obj_call_init(obj, argc, argv);
     return obj;
 }
@@ -4923,7 +4941,7 @@ time_new(int argc, VALUE *argv, VALUE self)
 {
     TIME_STRUCT *time;
     VALUE obj = Data_Make_Struct(self, TIME_STRUCT, 0, xfree, time);
-    
+
     rb_obj_call_init(obj, argc, argv);
     return obj;
 }
@@ -4937,7 +4955,7 @@ time_load1(VALUE self, VALUE str, int load)
     if (scan_dtts(str, 0, 1, &tss)) {
 	TIME_STRUCT *time;
 	VALUE obj;
-       
+
 	if (load) {
 	    obj = Data_Make_Struct(self, TIME_STRUCT, 0, xfree, time);
 	} else {
@@ -5531,7 +5549,7 @@ check_ncols(STMT *q)
 	(q->coltypes == NULL)) {
 	COLTYPE *coltypes = NULL;
 	SQLSMALLINT cols = 0;
-	
+
 	if (succeeded(SQL_NULL_HENV, SQL_NULL_HDBC, q->hstmt,
 		      SQLNumResultCols(q->hstmt, &cols), NULL,
 		      "SQLNumResultCols")
@@ -5779,7 +5797,7 @@ stmt_param_output_value(int argc, VALUE *argv, VALUE self)
 	break;
 #endif
     case SQL_C_CHAR:
-	v = rb_tainted_str_new(q->paraminfo[vnum].outbuf,
+	v = utf8_tainted_str_new(q->paraminfo[vnum].outbuf,
 			       q->paraminfo[vnum].rlen);
 	break;
     }
@@ -6035,7 +6053,7 @@ do_fetch(STMT *q, int mode)
     }
     if (q->dbcp != NULL && q->dbcp->use_sql_column_name == Qtrue) {
 	use_scn = 1;
-    } 
+    }
     switch (mode & DOFETCH_MODES) {
     case DOFETCH_HASH:
     case DOFETCH_HASH2:
@@ -6439,7 +6457,7 @@ do_fetch(STMT *q, int mode)
 		break;
 #endif
 	    default:
-		v = rb_tainted_str_new(valp, curlen);
+		v = utf8_tainted_str_new(valp, curlen);
 		break;
 	    }
 	}
@@ -7510,7 +7528,7 @@ stmt_exec_int(int argc, VALUE *argv, VALUE self, int mode)
 
     args.StatementHandle = q->hstmt;
     ret = (SQLRETURN)rb_thread_call_without_gvl(SQLExecute_wrapper, &args, SQLExecute_unblock, &args);
-    
+
     if (!succeeded_nodata(SQL_NULL_HENV, SQL_NULL_HDBC, q->hstmt, ret, &msg, "SQLExecute")) {
 error:
 #ifdef UNICODE
@@ -7569,7 +7587,7 @@ static VALUE
 stmt_do(int argc, VALUE *argv, VALUE self)
 {
     VALUE stmt;
-    
+
     if (argc < 1) {
 	rb_raise(rb_eArgError, "wrong # of arguments");
     }
@@ -8185,7 +8203,7 @@ Init_odbc()
     rb_cDate = rb_eval_string("Date");
 
     if (rb_const_defined(rb_cObject, modid)) {
-	v = rb_const_get(rb_cObject, modid); 
+	v = rb_const_get(rb_cObject, modid);
 	if (TYPE(v) != T_MODULE) {
 	    rb_raise(rb_eTypeError, "%s already defined", modname);
 	}
@@ -8519,6 +8537,16 @@ Init_odbc()
 #endif
 #else
     rb_define_const(Modbc, "UTF8", Qfalse);
+#ifdef USE_RB_ENC
+    rb_enc = rb_utf8_encoding();
+    rb_external_encoding = rb_default_external_encoding();
+
+    if( rb_enc && rb_external_encoding && rb_enc == rb_external_encoding )
+    {
+      printf("Ruby-ODBC: Force Encoding ruby result strings to UTF-8\n");
+      rb_encoding_is_utf8 = 1;
+    }
+#endif
 #endif
 
 #ifdef TRACING
