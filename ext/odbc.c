@@ -2040,6 +2040,7 @@ dbc_connect(int argc, VALUE *argv, VALUE self)
 #endif
     char *msg;
     SQLHDBC dbc;
+    SQLUINTEGER	nTimeout = 30;	// Timeout
 
     rb_scan_args(argc, argv, "03", &dsn, &user, &passwd);
     if (dsn != Qnil) {
@@ -2111,6 +2112,13 @@ dbc_connect(int argc, VALUE *argv, VALUE self)
 #endif
 	rb_raise(Cerror, "%s", msg);
     }
+    
+    {
+      SQLRETURN nRet;
+      nRet = SQLSetConnectAttr(dbc, SQL_ATTR_LOGIN_TIMEOUT, (SQLPOINTER)nTimeout, SQL_IS_INTEGER);
+      if (!SQL_SUCCEEDED(nRet)) printf("Failed to set timeout to %d: error %d\n", nTimeout, nRet);
+    }
+  
     if (!succeeded(SQL_NULL_HENV, dbc, SQL_NULL_HSTMT,
 		   SQLConnect(dbc, (SQLTCHAR *) sdsn, SQL_NTS,
 			      (SQLTCHAR *) suser,
