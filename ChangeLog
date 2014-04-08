@@ -1,6 +1,9 @@
 ODBC binding for Ruby
 ---------------------
 
+Wed April 8 2014 version 0.98 release <steve@cloudvolumes.com>
+	* Set login time to 30 seconds
+
 Wed Feb 26 2014 version 0.97 release <steve@cloudvolumes.com>
 	* Force encoding of all ruby strings in results to UTF8 if Encoding.default_external == 'UTF-8'
 	  You must be saving and retrieving UTF8 compatible strings in the database.

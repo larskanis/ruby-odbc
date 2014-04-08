@@ -129,7 +129,7 @@ static VALUE rb_encv = Qnil;
 #endif
 
 #ifdef TRACING
-static int tracing = 0;
+static int tracing = 1;
 #define tracemsg(t, x) {if (tracing & t) { x }}
 static SQLRETURN tracesql(SQLHENV henv, SQLHDBC hdbc, SQLHSTMT hstmt,
 			  SQLRETURN ret, const char *m);
@@ -1245,6 +1245,7 @@ tracesql(SQLHENV henv, SQLHDBC hdbc, SQLHSTMT hstmt, SQLRETURN ret,
 		(long) henv, (long) hdbc, (long) hstmt);
 	trace_sql_ret(ret);
     }
+    
     return ret;
 }
 #endif
@@ -2058,7 +2059,6 @@ dbc_connect(int argc, VALUE *argv, VALUE self)
 #endif
     char *msg;
     SQLHDBC dbc;
-    SQLUINTEGER	nTimeout = 30;	// Timeout
 
     rb_scan_args(argc, argv, "03", &dsn, &user, &passwd);
     if (dsn != Qnil) {
@@ -2133,8 +2133,15 @@ dbc_connect(int argc, VALUE *argv, VALUE self)
     
     {
       SQLRETURN nRet;
+
+      SQLUINTEGER	nTimeout = 30;	// Timeout
+      SQLUINTEGER	nOldTimeout = 0;
+
+      nRet = SQLGetConnectAttr(dbc, SQL_ATTR_LOGIN_TIMEOUT, (SQLPOINTER)&nOldTimeout, SQL_IS_INTEGER, NULL);
+      printf("Old timeout is %d seconds, changing to %d\n", nOldTimeout, nTimeout);
+
       nRet = SQLSetConnectAttr(dbc, SQL_ATTR_LOGIN_TIMEOUT, (SQLPOINTER)nTimeout, SQL_IS_INTEGER);
-      if (!SQL_SUCCEEDED(nRet)) printf("Failed to set timeout to %d: error %d\n", nTimeout, nRet);
+      if (!SQL_SUCCEEDED(nRet)) fprintf(stderr, "Failed to set timeout to %d: error %d\n", nTimeout, nRet);
     }
   
     if (!succeeded(SQL_NULL_HENV, dbc, SQL_NULL_HSTMT,
