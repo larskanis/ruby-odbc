@@ -1,7 +1,10 @@
 ODBC binding for Ruby
 ---------------------
 
-Wed April 8 2014 version 0.98 release <steve@cloudvolumes.com>
+Wed April 12 2014 version 0.99 release <matt@cloudvolumes.com>
+	* Remove debug log
+
+Wed April 8 2014 version 0.98 release <matt@cloudvolumes.com>
 	* Set login time to 30 seconds
 
 Wed Feb 26 2014 version 0.97 release <steve@cloudvolumes.com>
