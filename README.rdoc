@@ -37,6 +37,8 @@ This is an ODBC binding for Ruby. So far it has been tested with
 
     - Ruby 2.0.0, SQLite/ODBC >= 0.93, unixODBC 2.2.14 on Ubuntu 12.04 x86
 
+    - Ruby 2.2.5, MSSQL/ODBC on Windows 2008R2 (AppVolumes)
+
     Michael Neumann <neumann@s-direktnet.de> and
     Will Merrell <wmerrell@catalystcorp.com> reported successful compilation
     with Cygwin on Win32.

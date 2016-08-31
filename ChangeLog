@@ -1,6 +1,9 @@
 ODBC binding for Ruby
 ---------------------
 
+Wed August 31 2016 version 0.100.cv release <slawson@vmware.com>
+	* Add support for Ruby 2.x by using native "rb_thread_call_without_gvl" directly (thanks @shreyasahir)
+
 Wed April 12 2014 version 0.99 release <matt@cloudvolumes.com>
 	* Remove debug log
 
