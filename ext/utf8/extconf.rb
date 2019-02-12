@@ -113,9 +113,9 @@ if PLATFORM =~ /mswin32/ then
   have_func("SQLInstallerError", "odbcinst.h")
   have_func("SQLInstallerErrorW", "odbcinst.h")
 elsif PLATFORM =~ /(mingw|cygwin)/ then
-  have_library("odbc32", "")
-  have_library("odbccp32", "")
-  have_library("user32", "")
+  have_library("odbc32")
+  have_library("odbccp32")
+  have_library("user32")
   header = ["windows.h", "odbcinst.h"]
   have_func("SQLConfigDataSourceW", header)
   have_func("SQLWriteFileDSNW", header)

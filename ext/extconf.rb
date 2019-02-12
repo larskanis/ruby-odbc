@@ -95,9 +95,9 @@ if PLATFORM =~ /mswin32/ then
   have_func("SQLInstallerError", "odbcinst.h")
 # mingw untested !!!
 elsif PLATFORM =~ /(mingw|cygwin)/ then
-  have_library("odbc32", "")
-  have_library("odbccp32", "")
-  have_library("user32", "")
+  have_library("odbc32")
+  have_library("odbccp32")
+  have_library("user32")
 elsif (testdlopen && PLATFORM !~ /(macos|darwin)/ && CONFIG["CC"] =~ /gcc/ && have_func("dlopen", "dlfcn.h") && have_library("dl", "dlopen")) then
   $LDFLAGS+=" -Wl,-init -Wl,ruby_odbc_init -Wl,-fini -Wl,ruby_odbc_fini"
   $CPPFLAGS+=" -DHAVE_SQLCONFIGDATASOURCE"
