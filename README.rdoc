@@ -39,6 +39,8 @@ This is an ODBC binding for Ruby. So far it has been tested with
 
     - Ruby 2.2.5, MSSQL/ODBC on Windows 2008R2 (AppVolumes)
 
+    - Ruby 2.4.5, MSSQL/ODBC on Windows 2012R2 (AppVolumes)
+
     Michael Neumann <neumann@s-direktnet.de> and
     Will Merrell <wmerrell@catalystcorp.com> reported successful compilation
     with Cygwin on Win32.

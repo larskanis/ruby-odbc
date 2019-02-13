@@ -1,6 +1,11 @@
 ODBC binding for Ruby
 ---------------------
 
+Tue Feb 12 2019 version 0.101.cv release <slawson@vmware.com>
+	* Minor syntax changes to support Ruby 2.4
+	  Don't pass "" as the second parameter to has_library()
+	  Ensure char* are passed to rb_scan_args()
+
 Wed August 31 2016 version 0.100.cv release <slawson@vmware.com>
 	* Add support for Ruby 2.x by using native "rb_thread_call_without_gvl" directly (thanks @shreyasahir)
 
