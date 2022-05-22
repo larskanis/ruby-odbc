@@ -40,7 +40,7 @@
 #include <sqlucode.h>
 #endif
 
-static const char *VERSION = "0.99994";
+static const char *RUBY_OBDC_VERSION = "0.99994";
 
 #ifndef HAVE_TYPE_SQLTCHAR
 #ifdef UNICODE
@@ -6358,6 +6358,17 @@ do_fetch(STMT *q, int mode)
 		break;
 #endif
 	    default:
+        // the column metadata specified a fixed size so we didn't enter the loop
+        // to import the variable-length data in L6174. however, we cannot create
+        // a string with a SQL_NO_TOTAL (== -4) number of characters, so we need to
+        // set the size as the buffer size rather than the returned value.
+        // note that this is an expedient hack that will truncate the column value.
+        // a more robust solution would be to create another version of the L6174 loop
+        // here and load all the column's data.
+        if (curlen == SQL_NO_TOTAL) {
+            printf("TYPE: %d\n", type); fflush(stdout);
+            curlen = totlen;
+        }
 		v = rb_tainted_str_new(valp, curlen);
 		break;
 	    }
@@ -8117,7 +8128,7 @@ Init_odbc_ext()
     Modbc = rb_define_module(modname);
 
     /* Library version */
-    rb_define_const(Modbc, "VERSION", rb_str_new2(VERSION) );
+    rb_define_const(Modbc, "VERSION", rb_str_new2(RUBY_OBDC_VERSION) );
 
     Cobj = rb_define_class_under(Modbc, "Object", rb_cObject);
     rb_define_class_variable(Cobj, "@@error", Qnil);
