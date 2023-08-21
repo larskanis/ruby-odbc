@@ -7714,8 +7714,9 @@ stmt_proc_call(int argc, VALUE *argv, VALUE self)
 static VALUE
 stmt_proc(int argc, VALUE *argv, VALUE self)
 {
-    VALUE sql, ptype, psize, pnum = Qnil, stmt, args[2];
+    VALUE sql, ptype, psize, pnum = Qnil, stmt, args[2], proc_args[2], proc_arg[1];
     int parnum = 0;
+    VALUE block = rb_block_proc();
 
     rb_scan_args(argc, argv, "13", &sql, &ptype, &psize, &pnum);
     if (!rb_block_given_p()) {
@@ -7723,7 +7724,8 @@ stmt_proc(int argc, VALUE *argv, VALUE self)
     }
     stmt = stmt_prep_int(1, &sql, self, 0);
     if (argc == 1) {
-	return rb_funcall(Cproc, IDnew, 1, stmt);
+	proc_arg[0] = stmt;
+        return rb_funcall_with_block(Cproc, IDnew, 1, proc_arg, block);
     }
     if ((argc < 4) || (pnum == Qnil)) {
 	pnum = INT2NUM(parnum);
@@ -7741,13 +7743,18 @@ stmt_proc(int argc, VALUE *argv, VALUE self)
 	args[1] = INT2NUM(256);
     }
     stmt_param_output_size(2, args, stmt);
-    return rb_funcall(Cproc, IDnew, 2, stmt, pnum);
+
+    proc_args[0] = stmt;
+    proc_args[1] = pnum;
+
+    return rb_funcall_with_block(Cproc, IDnew, 2, proc_args, block);
 }
 
 static VALUE
 stmt_procwrap(int argc, VALUE *argv, VALUE self)
 {
-    VALUE arg0 = Qnil, arg1 = Qnil;
+    VALUE arg0 = Qnil, arg1 = Qnil, proc_args[2];
+    VALUE block = rb_block_proc();
 
     rb_scan_args(argc, argv, "02", &arg0, &arg1);
     if (rb_obj_is_kind_of(self, Cstmt) == Qtrue) {
@@ -7759,7 +7766,10 @@ stmt_procwrap(int argc, VALUE *argv, VALUE self)
     } else if (rb_obj_is_kind_of(arg0, Cstmt) != Qtrue) {
 	rb_raise(rb_eTypeError, "need ODBC::Statement as 1st argument");
     }
-    return rb_funcall(Cproc, IDnew, 2, arg0, arg1);
+
+    proc_args[0] = arg0;
+    proc_args[1] = arg1;
+    return rb_funcall_with_block(Cproc, IDnew, 2, proc_args, block);
 }
 
 /*
