@@ -1,5 +1,9 @@
 ODBC binding for Ruby
 ---------------------
+Tue Aug 21 2023 version 0.102.cv release <grajwade@vmware.com>
+	* Syntax changes to support Ruby 3.2 by using native "rb_str_new" instead of "rb_tainted_str_new"
+          Remove tained usage (thanks @vhermecz)
+	  Fix error 'tried to create Proc object without a block (ArgumentError)'
 
 Tue Feb 12 2019 version 0.101.cv release <slawson@vmware.com>
 	* Minor syntax changes to support Ruby 2.4
