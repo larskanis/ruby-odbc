@@ -1,8 +1,47 @@
 ODBC binding for Ruby
 ---------------------
+Mon Aug 21 2023 version 0.102.cv release <grajwade@vmware.com>
+	* Syntax changes to support Ruby 3.2 by using native "rb_str_new" instead of "rb_tainted_str_new"
+          Remove tained usage (thanks @vhermecz)
+	  Fix error 'tried to create Proc object without a block (ArgumentError)'
 
-HEAD
-  * migrated to hoe and rake-compiler for the build process
+Tue Feb 12 2019 version 0.101.cv release <slawson@vmware.com>
+	* Minor syntax changes to support Ruby 2.4
+	  Don't pass "" as the second parameter to has_library()
+	  Ensure char* are passed to rb_scan_args()
+
+Wed August 31 2016 version 0.100.cv release <slawson@vmware.com>
+	* Add support for Ruby 2.x by using native "rb_thread_call_without_gvl" directly (thanks @shreyasahir)
+
+Wed April 12 2014 version 0.99 release <matt@cloudvolumes.com>
+	* Remove debug log
+
+Wed April 8 2014 version 0.98 release <matt@cloudvolumes.com>
+	* Set login time to 30 seconds
+
+Wed Feb 26 2014 version 0.97 release <steve@cloudvolumes.com>
+	* Force encoding of all ruby strings in results to UTF8 if Encoding.default_external == 'UTF-8'
+	  You must be saving and retrieving UTF8 compatible strings in the database.
+
+Wed Jan 16 2014 version 0.99996 released
+
+	* Added call to rb_thread_blocking_region to release the global
+	  interpreter lock during SQLExecute and SQLExecDirect and require it
+	  afterwards.
+
+	  This improves performance by not blocking all Ruby threads during long
+	  running queries. This also fixes a deadlock which can occur in SQLExecute and
+	  SQLExecDirect which can happen when trying to read (if isolation level is
+	  "read committed", "repeatable read", "serializable", etc.) or when trying to
+	  modify a dirty row that has been modified by an uncommitted transaction. If this
+	  transaction was initiated by a ruby thread in the same process, all ruby threads
+	  will hang and the ruby process will become unresponsive.
+
+Wed Mar 13 2013 version 0.99995 released
+
+	* added ODBC::Database.use_sql_column_name= flag to switch
+	  usage of SQLColAttributes(SQL_COLUMN_LABEL) to 
+	  SQLColAttributes(SQL_COLUMN_NAME) on per connection basis
 
 Sat Jan 15 2011 version 0.99994 released
 
@@ -74,7 +113,7 @@ Fri Sep 15 2006 version 0.9993 released
 
 	* more tweaks in extconf.rb for --enable-dlopen'ed utf8 version
 	  thanks Daigo Moriwaki for testing
-	* eliminated warnings for installer functions
+	* eliminated warnings for installer functions 
 
 Mon Sep 11 2006 version 0.9992 released
 
@@ -85,7 +124,7 @@ Mon Sep 11 2006 version 0.9992 released
 	  by Neville Burnell
 	* handle SQL_NO_DATA for chunk-wise SQLGetData()
 	* determine dynamically which API (UNICODE or ANSI) to
-	  use for ODBC installer functions
+	  use for ODBC installer functions	
 	* more 64 bit fixes
 	* added missing SQLEndTran() in init.c
 
@@ -143,7 +182,7 @@ Tue Sep 07 2004 version 0.995 released
 
 Wed Jul 14 2004 version 0.994 released
 
-	* fixed ODBC::Database.new|connect so that
+	* fixed ODBC::Database.new|connect so that 
 	  ODBC::Database.new.drvconnect(string) works
 	* fixed SQLTCHAR detect for Win32 in extconf.rb,
 	  thanks to Pedro Luis Castedo Cepeda

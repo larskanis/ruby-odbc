@@ -2,7 +2,7 @@ COPYING
 ChangeLog
 GPL
 MANIFEST
-README
+README.rd
 ruby-odbc.gemspec
 ext/extconf.rb
 ext/odbc.c

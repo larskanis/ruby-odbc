@@ -1,10 +1,13 @@
 require 'mkmf'
 
-if enable_config('win32-cross-compilation')
-  PLATFORM = 'mingw32'
-elsif ! defined? PLATFORM
+if ! defined? PLATFORM
   PLATFORM = RUBY_PLATFORM
 end
+# 2.0+
+#adding this for backward compatible
+have_header('ruby/thread.h') && have_func('rb_thread_call_without_gvl', 'ruby/thread.h')
+# 1.9-only
+have_func('rb_thread_blocking_region')
 
 def have_library_ex(lib, func="main", headers=nil)
   checking_for "#{func}() in -l#{lib}" do
@@ -19,7 +22,7 @@ def have_library_ex(lib, func="main", headers=nil)
     end
   end
 end
-
+ 
 dir_config("odbc")
 have_header("version.h")
 have_header("sql.h") || begin
@@ -92,9 +95,9 @@ if PLATFORM =~ /mswin32/ then
   have_func("SQLInstallerError", "odbcinst.h")
 # mingw untested !!!
 elsif PLATFORM =~ /(mingw|cygwin)/ then
-  have_library("odbc32", "")
-  have_library("odbccp32", "")
-  have_library("user32", "")
+  have_library("odbc32")
+  have_library("odbccp32")
+  have_library("user32")
 elsif (testdlopen && PLATFORM !~ /(macos|darwin)/ && CONFIG["CC"] =~ /gcc/ && have_func("dlopen", "dlfcn.h") && have_library("dl", "dlopen")) then
   $LDFLAGS+=" -Wl,-init -Wl,ruby_odbc_init -Wl,-fini -Wl,ruby_odbc_fini"
   $CPPFLAGS+=" -DHAVE_SQLCONFIGDATASOURCE"
@@ -121,4 +124,4 @@ else
   end
 end
 
-create_makefile("odbc_ext")
+create_makefile("odbc")

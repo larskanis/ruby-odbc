@@ -1,8 +1,6 @@
 require 'mkmf'
 
-if enable_config('win32-cross-compilation')
-  PLATFORM = 'mingw32'
-elsif ! defined? PLATFORM
+if ! defined? PLATFORM
   PLATFORM = RUBY_PLATFORM
 end
 
@@ -40,7 +38,7 @@ def have_func_nolink(func, headers = nil, &b)
     end
   end
 end
-
+ 
 dir_config("odbc")
 have_header("sql.h") || begin
   puts "ERROR: sql.h not found"
@@ -114,16 +112,16 @@ if PLATFORM =~ /mswin32/ then
   have_func("SQLReadFileDSNW", "odbcinst.h")
   have_func("SQLInstallerError", "odbcinst.h")
   have_func("SQLInstallerErrorW", "odbcinst.h")
-# mingw untested !!!
 elsif PLATFORM =~ /(mingw|cygwin)/ then
-  have_library("odbc32", "")
-  have_library("odbccp32", "")
-  have_library("user32", "")
-  have_func("SQLConfigDataSourceW", "odbcinst.h")
-  have_func("SQLWriteFileDSNW", "odbcinst.h")
-  have_func("SQLReadFileDSNW", "odbcinst.h")
-  have_func("SQLInstallerError", "odbcinst.h")
-  have_func("SQLInstallerErrorW", "odbcinst.h")
+  have_library("odbc32")
+  have_library("odbccp32")
+  have_library("user32")
+  header = ["windows.h", "odbcinst.h"]
+  have_func("SQLConfigDataSourceW", header)
+  have_func("SQLWriteFileDSNW", header)
+  have_func("SQLReadFileDSNW", header)
+  have_func("SQLInstallerError", header)
+  have_func("SQLInstallerErrorW", header)
 elsif (testdlopen && PLATFORM !~ /(macos|darwin)/ && CONFIG["CC"] =~ /gcc/ && have_func("dlopen", "dlfcn.h") && have_library("dl", "dlopen")) then
   $LDFLAGS+=" -Wl,-init -Wl,ruby_odbc_init -Wl,-fini -Wl,ruby_odbc_fini"
   $CPPFLAGS+=" -DHAVE_SQLCONFIGDATASOURCE"
@@ -155,4 +153,4 @@ else
     have_func("SQLInstallerErrorW", "odbcinst.h")
 end
 
-create_makefile("odbc_utf8_ext")
+create_makefile("odbc_utf8")

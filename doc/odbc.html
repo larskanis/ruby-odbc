@@ -27,7 +27,7 @@
   <body>
     <h1><a name="reference">Ruby ODBC Reference</a></h1>
     <div class = "lastmodifed">
-      Last update: Thu, 16 September 2010
+      Last update: Wed, 13 March 2013
     </div>
     <hr>
     <div>
@@ -706,6 +706,12 @@ aproc.statement.drop</pre>
 	  SQL_TIMESTAMP data types to Ruby objects. When true,
 	  Ruby Date and Time objects are represented in UTC, when
 	  false (default) in the local timezone.
+	<dt><a name="use_sql_column_name">
+	  <code>use_sql_column_name[=<var>bool</var>]</code></a>
+	<dd>Sets or queries the flag controlling how column names are
+	  read from the data source. When false (default), the ODBC
+	  API <code>SQLColAttributes(SQL_COLUMN_LABEL)</code> is used,
+	  otherwise <code>SQLColAttributes(SQL_COLUMN_NAME)</code> is used.
       </dl>
       <h3>singleton methods:</h3>
       <dl>
