@@ -1,32 +1,13 @@
-#!/usr/bin/env rake
+# frozen_string_literal: true
 
-require 'rubygems'
-require 'hoe'
-require 'rake/extensiontask'
+require 'bundler'
 
-hoe = Hoe.spec 'ruby-odbc' do |ext|
-  developer('Christian Werner', 'chw @nospam@ ch-werner.de')
-
-  self.readme_file = 'README.rdoc'
-  self.history_file = 'ChangeLog'
-  self.extra_rdoc_files << self.readme_file
-  self.extra_rdoc_files += %w[ ext/init.c ext/odbc.c ]
-  self.local_rdoc_dir = 'generated_docs'
-  spec_extras[:extensions] = %w[ ext/extconf.rb ext/utf8/extconf.rb ]
+begin
+  Bundler.setup(:default, :development)
+rescue Bundler::BundlerError => e
+  warn e.message
+  warn 'Run `bundle install` to install missing gems'
+  exit e.status_code
 end
 
-ENV['RUBY_CC_VERSION'] ||= '1.8.7:1.9.2'
-
-Rake::ExtensionTask.new('odbc_ext', hoe.spec) do |ext|
-  ext.ext_dir = 'ext'
-  ext.cross_compile = true
-  ext.cross_platform = 'i386-mingw32'
-  ext.cross_config_options << '--enable-win32-cross-compilation'
-end
-
-Rake::ExtensionTask.new('odbc_utf8_ext', hoe.spec) do |ext|
-  ext.ext_dir = 'ext/utf8'
-  ext.cross_compile = true
-  ext.cross_platform = 'i386-mingw32'
-  ext.cross_config_options << '--enable-win32-cross-compilation'
-end
+require 'af_gems'
