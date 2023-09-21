@@ -3,7 +3,7 @@
 require_relative 'lib/ruby-odbc/version'
 
 Gem::Specification.new do |spec|
-  spec.name                  = 'ruby_odbc'
+  spec.name                  = 'ruby-odbc'
   spec.version               = RubyOdbc::VERSION
   spec.platform              = Gem::Platform::RUBY
   spec.author                = 'AppFolio'
