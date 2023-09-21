@@ -1,0 +1,12 @@
+/.bundle/
+/coverage/
+/pkg/
+/tmp/
+
+# Only generate Appraisal gemfiles on CI
+/gemfiles/
+
+# Ignore generated files
+Gemfile.lock
+*.log
+*.gem
